@@ -17,6 +17,35 @@
 
 ---
 
+### 2. 流程设计
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API_Server
+    participant Cache(Redis)
+    participant Worker
+
+    Client->>API_Server: 1. 提交视频生成请求
+    API_Server->>Client: 2. 返回RequestId
+    API_Server->>Cache: 3. 存储RequestId和初始状态（InQueue）
+    Client->>API_Server: 4. 查询状态（可选手动轮询）
+    
+    loop 自动轮询流程（xxx.enabled=true时）
+        Worker->>Cache: 5. 定时扫描待处理RequestId
+        Cache->>Worker: 6. 返回未完成的任务列表
+        Worker->>API_Server: 7. 内部查询生成状态
+        API_Server->>Worker: 8. 返回最新状态
+        alt 状态=Succeed/Failed
+            Worker->>Cache: 9. 更新最终状态和结果
+            Worker->>Client: 10. 回调通知（Webhook/WS）
+        else 状态=InProgress
+            Worker->>Cache: 11. 更新进度（如timings）
+        end
+    end
+```
+
+---
+
 ### 2. 目录结构
 
 ```
