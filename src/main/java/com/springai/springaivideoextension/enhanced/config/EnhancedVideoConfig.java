@@ -1,6 +1,11 @@
 package com.springai.springaivideoextension.enhanced.config;
 
 import com.springai.springaivideoextension.enhanced.api.VideoApi;
+import com.springai.springaivideoextension.enhanced.client.VideoClient;
+import com.springai.springaivideoextension.enhanced.model.VideoModel;
+import com.springai.springaivideoextension.enhanced.model.impl.VideoModelImpl;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
 import com.springai.springaivideoextension.enhanced.storage.impl.InMemoryVideoStorage;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +68,49 @@ public class EnhancedVideoConfig {
      * @return 视频存储服务实例
      */
     @Bean
-    public VideoStorage videoStorage() {
+    public VideoStorage imMemoryVideoStorage() {
         return new InMemoryVideoStorage();
+    }
+
+    /**
+     * 创建默认视频选项Bean
+     * 
+     * 提供视频生成的默认配置，包括提示词和模型选择。
+     * 默认模型设置为"Wan-AI/Wan2.2-T2V-A14B"。
+     * 
+     * @return 默认视频选项配置
+     */
+    @Bean
+    public VideoOptions defaultVideoOptions() {
+        return VideoOptionsImpl.builder()
+                .prompt("")
+                .model("Wan-AI/Wan2.2-T2V-A14B")
+                .build();
+    }
+
+    /**
+     * 创建视频模型Bean
+     * 
+     * 结合视频API客户端和默认选项创建视频模型实现。
+     * 作为视频处理的核心业务逻辑层。
+     * 
+     * @return 配置的视频模型实例
+     */
+    @Bean
+    public VideoModel videoModel() {
+        return new VideoModelImpl(videoApi(), defaultVideoOptions());
+    }
+
+    /**
+     * 创建视频客户端Bean
+     * 
+     * 通过组合视频模型和存储服务构建视频操作的主要入口点。
+     * 提供视频处理的高层接口。
+     * 
+     * @return 配置的视频客户端实例
+     */
+    @Bean
+    public VideoClient videoClient() {
+        return new VideoClient(videoModel(), imMemoryVideoStorage());
     }
 }
