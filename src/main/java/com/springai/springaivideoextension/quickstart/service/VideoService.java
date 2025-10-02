@@ -12,6 +12,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ImageService {
+public class VideoService {
 
 }
