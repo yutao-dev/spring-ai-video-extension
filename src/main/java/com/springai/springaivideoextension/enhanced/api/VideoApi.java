@@ -5,12 +5,9 @@
 
 package com.springai.springaivideoextension.enhanced.api;
 
-import ch.qos.logback.core.net.ObjectWriter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springai.springaivideoextension.enhanced.model.response.VideoResult;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
-import lombok.SneakyThrows;
 import org.springframework.ai.model.ApiKey;
 import org.springframework.ai.model.NoopApiKey;
 import org.springframework.ai.model.SimpleApiKey;
