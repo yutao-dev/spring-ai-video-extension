@@ -53,9 +53,6 @@ public class VideoApi {
         Assert.notNull(videoOptions, "Video request cannot be null.");
         Assert.hasLength(videoOptions.getPrompt(), "Prompt cannot be empty.");
 
-        /*String write = new ObjectMapper().writeValueAsString(videoOptions);
-        System.out.println(write);*/
-
         return this.restClient.post()
                 .uri(this.videoPath)
                 .body(videoOptions)
