@@ -1,6 +1,6 @@
-package com.ai.springaidemo02.ai.video.custom.model.request;
+package com.springai.springaivideoextension.enhanced.model.request;
 
-import com.ai.springaidemo02.ai.video.custom.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import org.springframework.ai.model.ModelOptions;
 import org.springframework.ai.model.ModelRequest;
 import org.springframework.util.Assert;

@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.storage;
+package com.springai.springaivideoextension.enhanced.storage;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

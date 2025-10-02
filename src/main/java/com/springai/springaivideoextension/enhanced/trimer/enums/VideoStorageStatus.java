@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.trimer.enums;
+package com.springai.springaivideoextension.enhanced.trimer.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

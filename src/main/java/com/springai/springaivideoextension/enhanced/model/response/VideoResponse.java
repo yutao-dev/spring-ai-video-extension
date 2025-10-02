@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.model.response;
+package com.springai.springaivideoextension.enhanced.model.response;
 
 import org.springframework.ai.model.ModelResponse;
 import org.springframework.ai.model.ResponseMetadata;

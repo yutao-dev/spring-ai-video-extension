@@ -1,8 +1,8 @@
-package com.ai.springaidemo02.ai.video.custom.storage.impl;
+package com.springai.springaivideoextension.enhanced.storage.impl;
 
-import com.ai.springaidemo02.ai.video.custom.storage.VideoStorage;
-import com.ai.springaidemo02.ai.video.custom.trimer.enums.VideoStorageStatus;
-import com.ai.springaidemo02.ai.video.custom.trimer.response.VideoScanResponse;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorageStatus;
+import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +36,6 @@ public class InMemoryVideoStorage implements VideoStorage {
      * value: 视频数据内容
      */
     private final Map<String, VideoScanResponse> videoStorage = new HashMap<>();
-
-    @PostConstruct
-    public void init() {
-        videoStorage.put(defaultKey + "tvchhnvu5dd4", new VideoScanResponse("tvchhnvu5dd4"));
-        log.info("初始化VideStorage成功: {}", videoStorage);
-    }
 
     /**
      * 保存视频数据，使用默认ID

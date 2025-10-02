@@ -1,8 +1,8 @@
-package com.ai.springaidemo02.ai.video.custom.option.impl;
+package com.springai.springaivideoextension.enhanced.option.impl;
 
-import com.ai.springaidemo02.ai.video.custom.option.VideoOptions;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import lombok.Builder;
 import lombok.Data;
 

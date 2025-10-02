@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.model.response;
+package com.springai.springaivideoextension.enhanced.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

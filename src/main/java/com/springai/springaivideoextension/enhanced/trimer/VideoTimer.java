@@ -1,9 +1,9 @@
-package com.ai.springaidemo02.ai.video.custom.trimer;
+package com.springai.springaivideoextension.enhanced.trimer;
 
-import com.ai.springaidemo02.ai.video.custom.api.VideoApi;
-import com.ai.springaidemo02.ai.video.custom.storage.VideoStorage;
-import com.ai.springaidemo02.ai.video.custom.trimer.enums.VideoStorageStatus;
-import com.ai.springaidemo02.ai.video.custom.trimer.response.VideoScanResponse;
+import com.springai.springaivideoextension.enhanced.api.VideoApi;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorageStatus;
+import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

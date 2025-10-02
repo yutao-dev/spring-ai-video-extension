@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: local
+
+  application:
+    name: spring-ai-video-extension
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
+      base-url: ${SPRING_AI_OPENAI_BASE_URL}

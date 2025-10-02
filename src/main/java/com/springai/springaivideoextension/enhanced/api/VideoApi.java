@@ -3,11 +3,11 @@
 // (powered by FernFlower decompiler)
 //
 
-package com.ai.springaidemo02.ai.video.custom.api;
+package com.springai.springaivideoextension.enhanced.api;
 
-import com.ai.springaidemo02.ai.video.custom.model.response.VideoResult;
-import com.ai.springaidemo02.ai.video.custom.option.VideoOptions;
-import com.ai.springaidemo02.ai.video.custom.trimer.response.VideoScanResponse;
+import com.springai.springaivideoextension.enhanced.model.response.VideoResult;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
 import lombok.SneakyThrows;
 import org.springframework.ai.model.ApiKey;
 import org.springframework.ai.model.NoopApiKey;

@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.option;
+package com.springai.springaivideoextension.enhanced.option;
 
 import org.springframework.ai.model.ModelOptions;
 

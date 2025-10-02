@@ -1,7 +1,7 @@
-package com.ai.springaidemo02.ai.video.custom.model;
+package com.springai.springaivideoextension.enhanced.model;
 
-import com.ai.springaidemo02.ai.video.custom.model.request.VideoPrompt;
-import com.ai.springaidemo02.ai.video.custom.model.response.VideoResponse;
+import com.springai.springaivideoextension.enhanced.model.request.VideoPrompt;
+import com.springai.springaivideoextension.enhanced.model.response.VideoResponse;
 import org.springframework.ai.model.Model;
 
 /**

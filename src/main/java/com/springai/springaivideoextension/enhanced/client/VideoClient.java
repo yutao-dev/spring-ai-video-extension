@@ -1,11 +1,11 @@
-package com.ai.springaidemo02.ai.video.custom.client;
+package com.springai.springaivideoextension.enhanced.client;
 
-import com.ai.springaidemo02.ai.video.custom.model.VideoModel;
-import com.ai.springaidemo02.ai.video.custom.model.request.VideoPrompt;
-import com.ai.springaidemo02.ai.video.custom.model.response.VideoResponse;
-import com.ai.springaidemo02.ai.video.custom.option.VideoOptions;
-import com.ai.springaidemo02.ai.video.custom.option.impl.VideoOptionsImpl;
-import com.ai.springaidemo02.ai.video.custom.storage.VideoStorage;
+import com.springai.springaivideoextension.enhanced.model.VideoModel;
+import com.springai.springaivideoextension.enhanced.model.request.VideoPrompt;
+import com.springai.springaivideoextension.enhanced.model.response.VideoResponse;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;

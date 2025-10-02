@@ -1,13 +1,13 @@
-package com.ai.springaidemo02.ai.video.custom.model.impl;
+package com.springai.springaivideoextension.enhanced.model.impl;
 
-import com.ai.springaidemo02.ai.video.custom.api.VideoApi;
-import com.ai.springaidemo02.ai.video.custom.model.VideoModel;
-import com.ai.springaidemo02.ai.video.custom.model.request.VideoPrompt;
-import com.ai.springaidemo02.ai.video.custom.model.response.VideoResponse;
-import com.ai.springaidemo02.ai.video.custom.model.response.VideoResult;
-import com.ai.springaidemo02.ai.video.custom.option.VideoOptions;
-import com.ai.springaidemo02.ai.video.custom.option.impl.VideoOptionsImpl;
-import com.ai.springaidemo02.common.util.BeanUtils;
+import com.springai.springaivideoextension.common.util.BeanUtils;
+import com.springai.springaivideoextension.enhanced.api.VideoApi;
+import com.springai.springaivideoextension.enhanced.model.VideoModel;
+import com.springai.springaivideoextension.enhanced.model.request.VideoPrompt;
+import com.springai.springaivideoextension.enhanced.model.response.VideoResponse;
+import com.springai.springaivideoextension.enhanced.model.response.VideoResult;
+import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
 import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

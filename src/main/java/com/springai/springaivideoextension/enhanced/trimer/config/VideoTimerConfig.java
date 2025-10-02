@@ -1,8 +1,8 @@
-package com.ai.springaidemo02.ai.video.custom.trimer.config;
+package com.springai.springaivideoextension.enhanced.trimer.config;
 
-import com.ai.springaidemo02.ai.video.custom.api.VideoApi;
-import com.ai.springaidemo02.ai.video.custom.storage.VideoStorage;
-import com.ai.springaidemo02.ai.video.custom.trimer.VideoTimer;
+import com.springai.springaivideoextension.enhanced.api.VideoApi;
+import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
+import com.springai.springaivideoextension.enhanced.trimer.VideoTimer;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

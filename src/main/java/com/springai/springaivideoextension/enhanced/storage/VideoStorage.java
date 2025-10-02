@@ -1,6 +1,5 @@
-package com.ai.springaidemo02.ai.video.custom.storage;
+package com.springai.springaivideoextension.enhanced.storage;
 
-import com.ai.springaidemo02.ai.video.custom.trimer.enums.VideoStorageStatus;
 
 import java.util.Collection;
 

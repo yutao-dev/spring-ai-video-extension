@@ -1,4 +1,4 @@
-package com.ai.springaidemo02.ai.video.custom.trimer.response;
+package com.springai.springaivideoextension.enhanced.trimer.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
