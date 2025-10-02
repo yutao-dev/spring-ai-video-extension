@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Objects;
+
 /**
  * @author 王玉涛
  * @version 1.0
@@ -27,7 +29,21 @@ public class VideoService {
      */
     public GenerateVideoResponse generateVideo(GenerateVideoRequest request) {
         Assert.notNull(request.getPrompt(), "提示词不能为空");
+        Assert.isTrue(
+    !Objects.isNull(request.getImage()) && "Wan-AI/Wan2.2-T2V-A14B".equals(request.getModel()),
+    "该模型不支持图片生成视频！"
+        );
 
+        // 这里所有的参数都会进行默认覆盖
+        String requestId = videoClient.param()
+                .prompt(request.getPrompt())
+                .model(request.getModel())
+                .imageSize(request.getVideoSize())
+                .negativePrompt(request.getNegativePrompt())
+                .image(request.getImage())
+                .seed(request.getSeed())
+                .getOutput();
 
+        return new GenerateVideoResponse(requestId);
     }
 }
