@@ -1,6 +1,8 @@
 package com.springai.springaivideoextension.enhanced.storage;
 
 
+import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
+
 import java.util.Collection;
 
 /**
@@ -54,10 +56,11 @@ public interface VideoStorage {
     /**
      * 更新视频任务状态
      *
-     * @param keyEnd 视频任务键值
+     * @param keyEnd             视频任务键值
      * @param videoStorageStatus 新的视频任务状态
+     * @param scanResponse
      */
-    void changeStatus(String keyEnd, VideoStorageStatus videoStorageStatus);
+    void changeStatus(String keyEnd, VideoStorageStatus videoStorageStatus, VideoScanResponse scanResponse);
 
     /**
      * 移除默认前缀

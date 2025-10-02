@@ -3,6 +3,7 @@ package com.springai.springaivideoextension.enhanced.config;
 import com.springai.springaivideoextension.enhanced.api.VideoApi;
 import com.springai.springaivideoextension.enhanced.client.VideoClient;
 import com.springai.springaivideoextension.enhanced.model.VideoModel;
+import com.springai.springaivideoextension.enhanced.model.enums.VideoGenerationModel;
 import com.springai.springaivideoextension.enhanced.model.impl.VideoModelImpl;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
@@ -58,19 +59,7 @@ public class EnhancedVideoConfig {
                 .videoStatusPath("/v1/video/status")
                 .build();
     }
-    
-    /**
-     * 创建视频存储服务Bean
-     * 
-     * 提供视频数据的存储功能，默认使用内存存储实现。
-     * 后续可根据需求替换为其他持久化存储方案。
-     * 
-     * @return 视频存储服务实例
-     */
-    @Bean
-    public VideoStorage imMemoryVideoStorage() {
-        return new InMemoryVideoStorage();
-    }
+
 
     /**
      * 创建默认视频选项Bean
@@ -84,7 +73,7 @@ public class EnhancedVideoConfig {
     public VideoOptions defaultVideoOptions() {
         return VideoOptionsImpl.builder()
                 .prompt("")
-                .model("Wan-AI/Wan2.2-T2V-A14B")
+                .model(VideoGenerationModel.QWEN_TEXT_TO_VIDEO.getModel())
                 .build();
     }
 
@@ -110,7 +99,7 @@ public class EnhancedVideoConfig {
      * @return 配置的视频客户端实例
      */
     @Bean
-    public VideoClient videoClient() {
-        return new VideoClient(videoModel(), imMemoryVideoStorage());
+    public VideoClient videoClient(VideoStorage videoStorage) {
+        return new VideoClient(videoModel(), videoStorage);
     }
 }

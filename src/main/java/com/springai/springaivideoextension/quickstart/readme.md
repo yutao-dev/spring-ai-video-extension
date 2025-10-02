@@ -85,9 +85,12 @@ GET /api/video/result/{requestId}
 
 ```json
 {
-  "success": true,
-  "requestId": "req-1234567890",
-  "videoUrl": "https://example.com/video.mp4"
+  "code": 200,
+  "data": {
+    "requestId": "req-1234567890",
+    "videoUrl": "https://example.com/video.mp4"
+  },
+  "message": "success"
 }
 ```
 

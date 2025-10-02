@@ -3,7 +3,6 @@ package com.springai.springaivideoextension.enhanced.storage.impl;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorageStatus;
 import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +26,7 @@ public class InMemoryVideoStorage implements VideoStorage {
     /**
      * 默认键前缀，用于构建存储键值，这里配置到配置文件中，在这里我们进行默认值的配置
      */
-    @Value("${ai.video.trimer.key-prefix:in:memory:key}")
+    @Value("${ai.video.trimer.key-prefix:in:memory:key:}")
     private String defaultKey;
 
     /**
@@ -128,11 +127,14 @@ public class InMemoryVideoStorage implements VideoStorage {
     /**
      * 更新视频任务状态
      *
-     * @param keyEnd                视频任务键值
+     * @param keyEnd             视频任务键值
      * @param videoStorageStatus 新的视频任务状态
+     * @param scanResponse       视频扫描结果
      */
     @Override
-    public void changeStatus(String keyEnd, VideoStorageStatus videoStorageStatus) {
+    public void changeStatus(String keyEnd, VideoStorageStatus videoStorageStatus, VideoScanResponse scanResponse) {
+        scanResponse.setRequestId(keyEnd);
+
         String key = this.defaultKey + keyEnd;
 
         log.info("开始更新视频任务状态: {}, 新状态: {}", key, videoStorageStatus);
@@ -146,6 +148,7 @@ public class InMemoryVideoStorage implements VideoStorage {
                     break;
                 case SUCCESS:
                     videoData.setStatus(VideoScanResponse.Status.SUCCEED);
+                    this.videoStorage.put(key, scanResponse);
                     break;
                 default:
                     log.warn("未知的状态: {}", videoStorageStatus);

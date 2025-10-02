@@ -93,11 +93,11 @@ public class VideoTimer {
             if (scanResponse.isSuccess()) {
                 log.info("开始处理成功数据: {}", key);
                 // 任务处理成功，更新状态为SUCCESS
-                videoStorage.changeStatus(key, VideoStorageStatus.SUCCESS);
+                videoStorage.changeStatus(key, VideoStorageStatus.SUCCESS, scanResponse);
             } else if (scanResponse.isFailed() && isTimeOut(scanResponse.getStartTime())) {
                 log.info("数据处理超时: {}", key);
                 // 任务处理超时，更新状态为TIME_OUT
-                videoStorage.changeStatus(key, VideoStorageStatus.TIME_OUT);
+                videoStorage.changeStatus(key, VideoStorageStatus.TIME_OUT, scanResponse);
             } else if (isTtl(scanResponse.getStartTime())) {
                 log.info("数据处理已过期: {}", key);
                 videoStorage.delete(key);
