@@ -1,18 +1,20 @@
 package com.springai.springaivideoextension.quickstart.service;
 
-import com.springai.springaivideoextension.common.util.BeanUtils;
+import com.springai.springaivideoextension.common.util.ImageUtils;
 import com.springai.springaivideoextension.enhanced.client.VideoClient;
+import com.springai.springaivideoextension.enhanced.model.enums.VideoGenerationModel;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
 import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
 import com.springai.springaivideoextension.quickstart.bean.request.GenerateVideoRequest;
 import com.springai.springaivideoextension.quickstart.bean.response.GenerateVideoResponse;
 import com.springai.springaivideoextension.quickstart.bean.response.VideoStatusResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.List;
+import java.io.File;
 import java.util.Objects;
 
 /**
@@ -37,16 +39,56 @@ public class VideoService {
         Assert.notNull(request.getPrompt(), "提示词不能为空");
 
         // 这里所有的参数都会进行默认覆盖
-        String requestId = videoClient.param()
+        VideoClient.ParamBuilder paramBuilder = videoClient.param()
                 .prompt(request.getPrompt())
                 .model(request.getModel())
                 .imageSize(request.getVideoSize())
                 .negativePrompt(request.getNegativePrompt())
                 .image(request.getImage())
-                .seed(request.getSeed())
-                .getOutput();
+                .seed(request.getSeed());
 
-        return new GenerateVideoResponse(requestId);
+        if (!Objects.isNull(request.getImage())) {
+
+            String output = imageToVideo(paramBuilder, request.getImage());
+
+            return new GenerateVideoResponse(output);
+        } else {
+
+            String output = textToVideo(paramBuilder);
+
+            return new GenerateVideoResponse(output);
+        }
+    }
+
+    /**
+     * 文本转视频
+     *
+     * @param paramBuilder 参数构造器
+     * @return 输出结果
+     */
+    private String textToVideo(VideoClient.ParamBuilder paramBuilder) {
+        log.info("文本转视频: {}", paramBuilder);
+        return paramBuilder.getOutput();
+    }
+
+    /**
+     * 文本转视频
+     *
+     * @param paramBuilder 参数构造器
+     * @param image
+     * @return 输出结果
+     */
+    @SneakyThrows
+    private String imageToVideo(VideoClient.ParamBuilder paramBuilder, String image) {
+        log.info("图片转视频: {}", paramBuilder);
+
+        File imageAsUrl = ImageUtils.createImageAsUrl(image);
+        String convert = ImageUtils.convert(imageAsUrl);
+
+        return paramBuilder
+                .model(VideoGenerationModel.QWEN_IMAGE_TO_VIDEO.getModel())
+                .image(convert)
+                .getOutput();
     }
 
     /**

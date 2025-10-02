@@ -129,7 +129,7 @@ public class ImageUtils {
         } else if (originalFilename.startsWith("webp")) {
             return "webp";
         } else {
-            return "jpg";
+            return "webp";
         }
     }
 

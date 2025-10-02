@@ -5,6 +5,8 @@
 
 package com.springai.springaivideoextension.enhanced.api;
 
+import ch.qos.logback.core.net.ObjectWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springai.springaivideoextension.enhanced.model.response.VideoResult;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
@@ -47,10 +49,12 @@ public class VideoApi {
      * @param videoOptions 自定义的VideoOptions，该接口将会继承ModelOptions
      * @return 返回参数
      */
-    @SneakyThrows
     public ResponseEntity<VideoResult> createVideo(VideoOptions videoOptions) {
         Assert.notNull(videoOptions, "Video request cannot be null.");
         Assert.hasLength(videoOptions.getPrompt(), "Prompt cannot be empty.");
+
+        /*String write = new ObjectMapper().writeValueAsString(videoOptions);
+        System.out.println(write);*/
 
         return this.restClient.post()
                 .uri(this.videoPath)
