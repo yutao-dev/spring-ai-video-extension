@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * 视频定时器配置类
  *
  * 该配置类用于管理视频处理的定时任务相关配置，包括是否启用定时器、超时时间及TTL设置
- * 通过读取 application.yml 中 ai.trimer.video 前缀的配置项进行参数设置
+ * 通过读取 application.yml 中 ai.video.trimer 前缀的配置项进行参数设置
  *
  * @author 王玉涛
  * @version 1.0
@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "ai.trimer.video")
+@ConfigurationProperties(prefix = "ai.video.trimer")
 public class VideoTimerConfig {
 
     /**

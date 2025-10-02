@@ -14,3 +14,8 @@ spring:
     openai:
       api-key: ${SPRING_AI_OPENAI_API_KEY}
       base-url: ${SPRING_AI_OPENAI_BASE_URL}
+
+ai:
+  video:
+    trimer:
+      enabled: true
