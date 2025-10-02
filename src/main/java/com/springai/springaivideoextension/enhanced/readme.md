@@ -38,6 +38,29 @@ enhanced/
         └── VideoScanResponse.java # 视频扫描响应
 ```
 
+## ⚠️ 常见问题与踩坑提示
+
+### 模型使用注意事项
+1. **模型选择**：系统支持两种模型：
+   - 文生视频模型：`Wan-AI/Wan2.2-T2V-A14B`
+   - 图生视频模型：`Wan-AI/Wan2.2-I2V-A14B`
+   - 不同模型有不同用途，不能混用
+
+2. **参数配置**：
+   - `prompt`：视频生成提示词，不能为空
+   - `image`：图生视频时必须提供，文生视频时应为空
+   - `model`：必须指定正确的模型名称
+
+### 定时任务注意事项
+1. **定时任务依赖配置**：确保在 `application.yaml` 中正确配置定时任务参数
+2. **任务状态更新**：任务状态更新时会同时更新状态和扫描结果数据
+3. **内存存储限制**：默认使用内存存储，重启服务会丢失数据，生产环境建议替换为持久化存储
+
+### API调用注意事项
+1. **API Key配置**：确保在配置文件中正确设置API Key
+2. **错误处理**：API调用包含重试机制，但仍需处理网络异常等边界情况
+3. **响应处理**：注意检查API响应状态码，非2xx状态码表示调用失败
+
 ## 🚀 核心功能
 
 ### 1. 视频生成模型 (VideoModel)
@@ -111,7 +134,9 @@ System.out.println("视频生成请求ID: " + requestId);
 | `ai.video.timer.timeout`    | 任务超时时间（毫秒）   | `300000` (5分钟)    |
 | `ai.video.timer.ttl`        | 任务存储 TTL（毫秒） | `86400000` (24小时) |
 | `ai.video.timer.interval`   | 轮询间隔（毫秒）     | `30000` (30秒)     |
-| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key`   |
+| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key:`   |
+
+> ⚠️ 注意：`ai.video.timer.key-prefix` 默认值已修正为 `in:memory:key:`（以冒号结尾），旧版本缺少末尾冒号可能导致键值处理异常
 
 ## 🔄 工作流程
 

@@ -17,6 +17,26 @@
 
 ---
 
+## ⚠️ 常见问题与踩坑提示
+
+### 图片处理相关问题
+1. **图片格式支持**：目前支持 `png`、`jpg/jpeg`、`webp` 格式，其他格式可能会导致处理失败
+2. **网络图片处理**：使用网络图片时，确保URL可访问且返回的是有效的图片数据
+3. **图片大小限制**：过大的图片可能导致处理超时或内存溢出，请控制图片大小在合理范围内
+
+### 模型使用注意事项
+1. **文生视频 vs 图生视频**：
+   - 文生视频模型：`Wan-AI/Wan2.2-T2V-A14B`
+   - 图生视频模型：`Wan-AI/Wan2.2-I2V-A14B`
+   - 两种模型不能混用，图生视频必须提供参考图片
+
+2. **提示词优化**：
+   - 详细具体的描述通常能获得更好的效果
+   - 可使用负面提示词排除不希望出现的内容
+   - 合理使用随机种子控制生成一致性
+
+---
+
 ### 2. 流程设计
 ```mermaid
 sequenceDiagram
@@ -92,7 +112,9 @@ enhanced
 | `ai.video.timer.timeout`    | 任务超时时间（ms）   | `300000`（5 min）  | `600000`      |
 | `ai.video.timer.ttl`        | 任务存储 TTL（ms） | `86400000`（24 h） | `3600000`     |
 | `ai.video.timer.interval`   | 轮询间隔（ms）     | `30000`（30 s）    | `10000`       |
-| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key`  | `video:task:` |
+| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key:`  | `video:task:` |
+
+> ⚠️ 注意：`ai.video.timer.key-prefix` 默认值已修正为 `in:memory:key:`（以冒号结尾），旧版本缺少末尾冒号可能导致键值处理异常
 
 ---
 
