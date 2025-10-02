@@ -28,7 +28,7 @@ POST /api/videos
 |----------------|--------|----|--------------------------------------|
 | prompt         | String | 是  | 视频生成提示词                              |
 | model          | String | 否  | 使用的模型名称，默认为 `Wan-AI/Wan2.2-T2V-A14B` |
-| imageSize      | String | 否  | 生成视频的尺寸                              |
+| videoSize      | String | 否  | 生成视频的尺寸                              |
 | negativePrompt | String | 否  | 负面提示词，排除不希望出现的内容                     |
 | image          | String | 否  | 参考图像路径                               |
 | seed           | Long   | 否  | 随机种子，用于控制生成的一致性                      |
