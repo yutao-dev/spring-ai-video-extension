@@ -80,9 +80,13 @@ public class HuoShanVideoOptions extends AbstractVideoOptions {
     @Override
     public String buildJsonBody() {
         Content textContent = new Content(ContentType.TEXT, this.prompt);
-        Content imageContent = new Content(ContentType.IMAGE_URL, this.image);
-        this.content = List.of(textContent, imageContent);
-        
+        if (Objects.isNull(this.image)) {
+            this.content = List.of(textContent);
+        } else {
+            Content imageContent = new Content(ContentType.IMAGE_URL, this.image);
+            this.content = List.of(textContent, imageContent);
+        }
+
         return JsonUtils.writeValueAsString(this);
     }
 

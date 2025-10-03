@@ -5,6 +5,7 @@
 
 package com.springai.springaivideoextension.enhanced.api;
 
+import com.springai.springaivideoextension.common.util.JsonUtils;
 import com.springai.springaivideoextension.enhanced.model.response.VideoResult;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.trimer.response.VideoScanResponse;
@@ -21,6 +22,7 @@ import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class VideoApi {
     private final RestClient restClient;
@@ -41,20 +43,34 @@ public class VideoApi {
         this.videoStatusPath = videoStatusPath;
     }
 
+
     /**
-     * 新改动：将返回参数类型改为VideoResult，方便接收返回参数,删除原来的Response的Record类
-     * @param videoOptions 自定义的VideoOptions，该接口将会继承ModelOptions
-     * @return 返回参数
+     * 提交视频生成请求
+     * 
+     * @param videoOptions 视频生成选项，包含提示词等必要参数
+     * @return 包含视频生成任务ID的响应实体
+     * @throws IllegalArgumentException 当videoOptions为null或prompt为空时抛出
      */
     public ResponseEntity<VideoResult> createVideo(VideoOptions videoOptions) {
         Assert.notNull(videoOptions, "Video request cannot be null.");
         Assert.hasLength(videoOptions.getPrompt(), "Prompt cannot be empty.");
 
-        return this.restClient.post()
+        String jsonBody = videoOptions.buildJsonBody();
+        System.out.println(jsonBody);
+
+        // 发送POST请求到视频生成接口
+        RestClient.ResponseSpec responseSpec = this.restClient.post()
                 .uri(this.videoPath)
-                .body(videoOptions)
-                .retrieve()
-                .toEntity(VideoResult.class);
+                .body(jsonBody)
+                .retrieve();
+        String body = responseSpec.body(String.class);
+        Map<String, String> resultMap = JsonUtils.readValueToMap(body, String.class);
+        
+        // 从响应中提取任务ID，因为不同的厂商都会提供一个参数，可以直接使用，以兼容不同厂商，防止额外的抽象导致的类进一步膨胀
+        String id = Objects.isNull(resultMap) ? null : resultMap.values().stream().findFirst().orElseGet(() -> null);
+        VideoResult videoResult = new VideoResult(id);
+
+        return ResponseEntity.ok(videoResult);
     }
 
     /**
@@ -65,10 +81,15 @@ public class VideoApi {
     public ResponseEntity<VideoScanResponse> createVideo(String requestId) {
         Assert.notNull(requestId, "Video request cannot be null.");
 
+        // 这里进行适配，如果请求形式是地址传递的，则进行替换
+        String replace = this.videoPath.replace("{id}", requestId);
+        // 这里进行适配，如果请求形式是地址传递的，则进行不传入body
+        Map<String, String> body = replace.equals(this.videoStatusPath) ? Map.of("requestId", requestId) : Map.of();
+
         return this.restClient.post()
                 // 注意，这里更换为另一个后缀地址，如果需要，请自行修改，后续会提供完整的压缩包
-                .uri(this.videoStatusPath)
-                .body(Map.of("requestId", requestId))
+                .uri(replace)
+                .body(body)
                 .retrieve()
                 .toEntity(VideoScanResponse.class);
     }

@@ -2,6 +2,8 @@ package com.springai.springaivideoextension.enhanced.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.ai.model.ModelResult;
 import org.springframework.ai.model.ResultMetadata;
 
@@ -21,7 +23,7 @@ public class VideoResult implements ModelResult<String> {
      * 视频处理输出结果
      * 使用@JsonProperty注解将该字段映射为JSON中的"requestId"属性
      */
-    @JsonProperty("requestId")
+    @JsonProperty("id")
     private String output;
 
     /**
@@ -30,6 +32,22 @@ public class VideoResult implements ModelResult<String> {
      */
     @JsonIgnore
     private ResultMetadata resultMetadata;
+
+    /**
+     * 构造函数，用于初始化视频处理结果对象
+     *
+     * @param output 视频处理输出结果
+     */
+    public VideoResult() {}
+
+    /**
+     * 构造函数，用于初始化视频处理结果对象
+     *
+     * @param output 视频处理输出结果
+     */
+    public VideoResult(String output) {
+        this.output = output;
+    }
 
     /**
      * 获取视频处理的输出结果

@@ -6,16 +6,16 @@ import com.springai.springaivideoextension.enhanced.model.request.VideoPrompt;
 import com.springai.springaivideoextension.enhanced.model.response.VideoResponse;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.option.factory.VideoOptionsFactory;
-import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
+import com.springai.springaivideoextension.enhanced.storage.impl.InMemoryVideoStorage;
 import jakarta.annotation.Resource;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author 王玉涛
@@ -26,30 +26,62 @@ import java.util.Objects;
 public class VideoClient {
 
     // 视频模型接口，用于调用视频生成服务
-    private final VideoModel videoModel;
+    private final VideoModel defaultVideoModel;
     // 视频存储接口，用于持久化视频生成结果
     private final VideoStorage videoStorage;
-
-    @Resource
-    private VideoOptionsFactory videoOptionsFactory;
+    // 模型参数映射表
+    private final Map<String, VideoModel> videoModelMap;
+    // 视频选项工厂类
+    private final VideoOptionsFactory videoOptionsFactory;
 
     /**
      * 构造函数，仅指定视频模型
-     * @param videoModel 视频模型实例
+     * @param defaultVideoModel 视频模型实例
      */
-    public VideoClient(VideoModel videoModel) {
-        this.videoModel = videoModel;
+    public VideoClient(VideoModel defaultVideoModel) {
+        this.defaultVideoModel = defaultVideoModel;
         this.videoStorage = null;
+        this.videoModelMap = Collections.emptyMap();
+        this.videoOptionsFactory = new VideoOptionsFactory(List.of());
     }
 
     /**
      * 构造函数，指定视频模型和存储接口
-     * @param videoModel 视频模型实例
+     * @param defaultVideoModel 视频模型实例
      * @param videoStorage 视频存储实例
      */
-    public VideoClient(VideoModel videoModel, VideoStorage videoStorage) {
-        this.videoModel = videoModel;
+    public VideoClient(VideoModel defaultVideoModel, VideoStorage videoStorage) {
+        this.defaultVideoModel = defaultVideoModel;
         this.videoStorage = videoStorage;
+        this.videoModelMap = Collections.emptyMap();
+        this.videoOptionsFactory = new VideoOptionsFactory(List.of());
+    }
+
+    /**
+     * 构造函数，指定视频模型和存储接口
+     * @param defaultVideoModel 默认视频模型实例
+     * @param videoStorage 视频存储实例
+     * @param videoModelMap 模型参数映射表
+     */
+    public VideoClient(VideoModel defaultVideoModel, VideoStorage videoStorage, Map<String, VideoModel> videoModelMap) {
+        this.defaultVideoModel = defaultVideoModel;
+        this.videoStorage = videoStorage;
+        this.videoModelMap = videoModelMap;
+        this.videoOptionsFactory = new VideoOptionsFactory(List.of());
+    }
+
+    /**
+     * 构造函数，指定视频模型、存储接口和模型参数映射表
+     * @param defaultVideoModel 默认视频模型实例
+     * @param videoStorage 视频存储实例
+     * @param videoModelMap 模型参数映射表
+     * @param videoOptionsFactory 视频选项工厂类
+     */
+    public VideoClient(VideoModel defaultVideoModel, VideoStorage videoStorage, Map<String, VideoModel> videoModelMap, VideoOptionsFactory videoOptionsFactory) {
+        this.defaultVideoModel = defaultVideoModel;
+        this.videoStorage = videoStorage;
+        this.videoModelMap = videoModelMap;
+        this.videoOptionsFactory = videoOptionsFactory;
     }
 
     /**
@@ -57,9 +89,9 @@ public class VideoClient {
      * @param videoPrompt 视频生成请求参数
      * @return 视频生成响应结果
      */
-    private VideoResponse call(VideoPrompt videoPrompt) {
-        // 调用视频模型生成视频
-        VideoResponse videoResponse = this.videoModel.call(videoPrompt);
+    private VideoResponse call(VideoPrompt videoPrompt, String modelId) {
+        // 尝试寻找模型参数映射表，找不到则使用默认模型
+        VideoResponse videoResponse = this.videoModelMap.getOrDefault(modelId, this.defaultVideoModel).call(videoPrompt);
 
         // 获取生成结果的输出信息
         String output = videoResponse.getResult().getOutput();
@@ -102,7 +134,7 @@ public class VideoClient {
         // 模型唯一标识
         private String modelId;
 
-        private Map<String, TypedObject<?>> params;
+        private Map<String, TypedObject<?>> params = new HashMap<>();
 
         /**
          * 设置视频生成提示词
@@ -155,8 +187,8 @@ public class VideoClient {
         public VideoResponse call() {
             Assert.isTrue(StringUtils.hasText(model), "模型名称不能为空");
             Assert.isTrue(StringUtils.hasText(prompt), "视频生成提示词不能为空");
-            LoggerUtils.logWarnIfTrue(StringUtils.hasText(model), "模型名称未指定, 将使用默认模型, 可能会出现错误！");
-            LoggerUtils.logWarnIfTrue(StringUtils.hasText(image), "参考图像未指定, 若模型不对，可能会出现错误！");
+            LoggerUtils.logWarnIfTrue(!StringUtils.hasText(model), "模型名称未指定, 将使用默认模型, 可能会出现错误！");
+            LoggerUtils.logWarnIfTrue(!StringUtils.hasText(image), "参考图像未指定, 若模型不对，可能会出现错误！");
 
             // 根据模型名称获取模型参数
             VideoOptions videoOptions = videoOptionsFactory.getVideoOptions(modelId);
@@ -168,7 +200,7 @@ public class VideoClient {
             // 创建视频提示对象
             VideoPrompt videoPrompt = new VideoPrompt(prompt, videoOptions);
             // 调用视频生成接口
-            return VideoClient.this.call(videoPrompt);
+            return VideoClient.this.call(videoPrompt, modelId);
         }
 
         /**

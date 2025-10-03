@@ -61,6 +61,8 @@ public class VideoScanResponse {
     private String requestId;
     @JsonIgnore
     private Long startTime;
+    @JsonIgnore
+    private String modelId;
 
     //----- 仅失败时返回的字段 -----//
     @JsonProperty("reason")

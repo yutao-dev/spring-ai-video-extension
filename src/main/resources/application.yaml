@@ -18,4 +18,17 @@ spring:
 ai:
   video:
     trimer:
-      enabled: true
+      enabled: false # 我们暂时不需要定时任务，后续再优化这里
+
+    api-keys:
+      - ${SPRING_AI_OPENAI_API_KEY}
+      - ${HUO_SHAN_API_KEY}
+    base-urls:
+      - ${SPRING_AI_OPENAI_BASE_URL}
+      - ${HUO_SHAN_BASE_URL}
+    video-status-paths:
+      - ${SPRING_AI_OPENAI_VIDEO_STATUS_PATH}
+      - ${HUO_SHAN_VIDEO_STATUS_PATH}
+    video-paths:
+      - ${SPRING_AI_OPENAI_VIDEO_PATH}
+      - ${HUO_SHAN_VIDEO_PATH}

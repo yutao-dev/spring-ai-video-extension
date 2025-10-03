@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * 视频定时任务处理器
@@ -48,6 +49,7 @@ public class VideoTimer {
      * 视频API实现类
      */
     private final VideoApi videoApi;
+
 
     /**
      * 视频扫描定时任务

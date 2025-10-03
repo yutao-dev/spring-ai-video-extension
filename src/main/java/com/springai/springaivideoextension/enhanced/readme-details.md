@@ -720,3 +720,63 @@
     平均耗时: SilonCloud: 0.00818ms, HuoShan: 0.00402ms
     ```
    - 当前的压测结果表明，两者从**深拷贝 ——> 序列化**这个过程的性能都是合格的，无需继续优化
+3. **到此，方舟的请求参数适配化改造就完成了！**
+
+#### 4.4.5 VideoModel的适配化改造
+1. 在之前我们已经完成了基于策略模式的请求体序列化过程，接下来我们需要修改VideoModel的调用形式
+2. 因为VideoModel底层绑定了VideoApi，这意味着从底层到顶层，不同的Api实现要对应不同的VideoModel
+3. 我们可以保持原有的VideoClient内部的VideoModel不动，这个作为兜底调用，并添加Map<String, VideoModel>，以modelId作为key
+4. 修改代码如下
+    ```java
+    /**
+     * @author 王玉涛
+     * @version 1.0
+     * @since 2025/9/30
+     */
+    @Slf4j
+    public class VideoClient {
+    
+    // 视频模型接口，用于调用视频生成服务
+    private final VideoModel defaultVideoModel;
+    // 视频存储接口，用于持久化视频生成结果
+    private final VideoStorage videoStorage;
+    // 模型参数映射表
+    private final Map<String, VideoModel> videoModelMap;
+    
+    // ......
+   
+   /**
+     * 调用视频模型生成视频，并根据配置决定是否持久化结果
+     * @param videoPrompt 视频生成请求参数
+     * @return 视频生成响应结果
+     */
+    private VideoResponse call(VideoPrompt videoPrompt) {
+        // 调用视频模型生成视频
+        String modelId = ((VideoOptions) videoPrompt.getOptions()).getModelId();
+        // 改动： 尝试寻找模型参数映射表，找不到则使用默认模型
+        VideoResponse videoResponse = this.videoModelMap.getOrDefault(modelId, this.defaultVideoModel).call(videoPrompt);
+
+        // 获取生成结果的输出信息
+        String output = videoResponse.getResult().getOutput();
+        log.info("视频生成结果: {}", output);
+
+        // 如果未配置存储接口，则直接返回结果
+        if (Objects.isNull(this.videoStorage)) {
+            log.warn("未指定持久化容器，将返回原始结果");
+            return videoResponse;
+        }
+
+        // 持久化视频生成结果
+        log.info("开始持久化请求结果");
+        boolean save = this.videoStorage.save(output);
+        if (!save) {
+            log.warn("持久化失败, 请求id: {}", output);
+        }
+
+        return videoResponse;
+    }
+    ```
+5. 单元测试集成
+   - 我们将再次通过单元测试，测试VideoClient内部功能是否可以正常使用
+   - 
+6. **到此，VideClient的适配化改造就完成了！我们后续将会从VideoApi再次入手**
