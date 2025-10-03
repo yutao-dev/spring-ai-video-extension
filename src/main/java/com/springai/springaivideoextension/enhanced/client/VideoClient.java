@@ -1,13 +1,20 @@
 package com.springai.springaivideoextension.enhanced.client;
 
+import com.springai.springaivideoextension.common.util.LoggerUtils;
 import com.springai.springaivideoextension.enhanced.model.VideoModel;
 import com.springai.springaivideoextension.enhanced.model.request.VideoPrompt;
 import com.springai.springaivideoextension.enhanced.model.response.VideoResponse;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.option.factory.VideoOptionsFactory;
 import com.springai.springaivideoextension.enhanced.option.impl.VideoOptionsImpl;
+import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import com.springai.springaivideoextension.enhanced.storage.VideoStorage;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -22,6 +29,9 @@ public class VideoClient {
     private final VideoModel videoModel;
     // 视频存储接口，用于持久化视频生成结果
     private final VideoStorage videoStorage;
+
+    @Resource
+    private VideoOptionsFactory videoOptionsFactory;
 
     /**
      * 构造函数，仅指定视频模型
@@ -87,14 +97,12 @@ public class VideoClient {
         private String prompt;
         // 使用的模型名称
         private String model;
-        // 生成视频的尺寸
-        private String imageSize;
-        // 负面提示词，用于排除不希望出现的内容
-        private String negativePrompt;
         // 参考图像路径
         private String image;
-        // 随机种子，用于控制生成的一致性
-        private Long seed;
+        // 模型唯一标识
+        private String modelId;
+
+        private Map<String, TypedObject<?>> params;
 
         /**
          * 设置视频生成提示词
@@ -103,6 +111,7 @@ public class VideoClient {
          */
         public ParamBuilder prompt(String prompt) {
             this.prompt = prompt;
+            this.params.put("prompt", TypedObject.valueOf(prompt, String.class));
             return this;
         }
 
@@ -113,26 +122,13 @@ public class VideoClient {
          */
         public ParamBuilder model(String model) {
             this.model = model;
+            this.params.put("model", TypedObject.valueOf(model, String.class));
             return this;
         }
 
-        /**
-         * 设置生成视频的尺寸
-         * @param imageSize 视频尺寸
-         * @return 参数构建器实例
-         */
-        public ParamBuilder imageSize(String imageSize) {
-            this.imageSize = imageSize;
-            return this;
-        }
-
-        /**
-         * 设置负面提示词
-         * @param negativePrompt 负面提示词
-         * @return 参数构建器实例
-         */
-        public ParamBuilder negativePrompt(String negativePrompt) {
-            this.negativePrompt = negativePrompt;
+        public ParamBuilder modelId(String modelId) {
+            this.modelId = modelId;
+            this.params.put("modelId", TypedObject.valueOf(modelId, String.class));
             return this;
         }
 
@@ -143,16 +139,12 @@ public class VideoClient {
          */
         public ParamBuilder image(String image) {
             this.image = image;
+            this.params.put("image", TypedObject.valueOf(image, String.class));
             return this;
         }
 
-        /**
-         * 设置随机种子
-         * @param seed 随机种子
-         * @return 参数构建器实例
-         */
-        public ParamBuilder seed(Long seed) {
-            this.seed = seed;
+        public ParamBuilder paramSet(String parmName, Object value, Class<?> type) {
+            this.params.put(parmName, TypedObject.valueOf(value, type));
             return this;
         }
 
@@ -161,15 +153,18 @@ public class VideoClient {
          * @return 视频生成响应结果
          */
         public VideoResponse call() {
-            // 构建视频选项参数
-            VideoOptions options = VideoOptionsImpl.builder()
-                    .prompt(prompt)
-                    .model(model)
-                    .imageSize(imageSize)
-                    .negativePrompt(negativePrompt)
-                    .image(image)
-                    .seed(seed)
-                    .build();
+            Assert.isTrue(StringUtils.hasText(model), "模型名称不能为空");
+            Assert.isTrue(StringUtils.hasText(prompt), "视频生成提示词不能为空");
+            LoggerUtils.logWarnIfTrue(StringUtils.hasText(model), "模型名称未指定, 将使用默认模型, 可能会出现错误！");
+            LoggerUtils.logWarnIfTrue(StringUtils.hasText(image), "参考图像未指定, 若模型不对，可能会出现错误！");
+
+            // 根据模型名称获取模型参数
+            VideoOptions videoOptions = videoOptionsFactory.getVideoOptions(modelId);
+            // 如果无法准确获取modelId，那么将会尝试通过模型名称获取(并发出警告)
+            videoOptions = Objects.isNull(videoOptions) ? videoOptionsFactory.getVideoOptionsByModel(model) : videoOptions;
+            // 保存所有的参数，构建请求参数将会以这个为准
+            videoOptions.setAllParameters(this.params);
+
             // 创建视频提示对象
             VideoPrompt videoPrompt = new VideoPrompt(prompt, options);
             // 调用视频生成接口

@@ -3,10 +3,14 @@ package com.springai.springaivideoextension.enhanced.option.impl;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springai.springaivideoextension.common.util.JsonUtils;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
@@ -21,6 +25,7 @@ import java.util.Map;
  * @since 2025/9/29
  */
 @Data
+@Slf4j
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HuoShanVideoOptions implements VideoOptions {
@@ -89,8 +94,18 @@ public class HuoShanVideoOptions implements VideoOptions {
     private Long seed;
 
     /**
-     * 所有参数
+     * 所有参数，他的作用是：存储非标准字段，序列化的时候将会作为重要的字段
      */
     @JsonIgnore
     private Map<String, TypedObject<?>> allParameters;
+
+    /**
+     * 构建JSON请求体
+     *
+     * @return JSON请求体字符串
+     */
+    @Override
+    public String buildJsonBody() {
+        return JsonUtils.writeValueAsString(this);
+    }
 }

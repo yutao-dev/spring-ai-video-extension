@@ -69,4 +69,11 @@ public interface VideoOptions extends ModelOptions {
      * @return 参数映射关系
      */
     Map<String, TypedObject<?>> getAllParameters();
+
+    /**
+     * 构建JSON请求体
+     *
+     * @return JSON请求体字符串
+     */
+    String buildJsonBody();
 }

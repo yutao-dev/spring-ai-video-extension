@@ -378,4 +378,207 @@
     @JsonIgnore
     private Map<String, TypedObject<?>> allParameters;
     ```
-9. 
+   
+#### 4.4.3 流程分析
+
+1. 经过上述的改造后，字段灵活性得到了提升，但是我们需要重新梳理一下思路：如何开展适配化改造，可以保证更加顺利？
+2. 我们决定从Client入手，自顶向下，在Client阶段考虑针对非标准字段的适配化改造
+3. 首先我们看当前的Client字段构造核心流程
+    ```java
+    /**
+     * 执行视频生成请求
+     * @return 视频生成响应结果
+     */
+    public VideoResponse call() {
+        // 构建视频选项参数
+        VideoOptions options = VideoOptionsImpl.builder()
+                .prompt(prompt)
+                .model(model)
+                .imageSize(imageSize)
+                .negativePrompt(negativePrompt)
+                .image(image)
+                .seed(seed)
+                .build();
+        // 创建视频提示对象
+        VideoPrompt videoPrompt = new VideoPrompt(prompt, options);
+        // 调用视频生成接口
+        return VideoClient.this.call(videoPrompt);
+    }
+    ```
+4. 首先我们可以看到，这里并不能很好的兼容非标准化字段，因此我们需要进行演进
+5. 在Client的参数构建阶段，只保留prompt、image、model标准字段，同步添加modelId、modelName、modelDescription业务字段
+6. 同时提供通用方式，即paramSet(String paramName, Object value, Class<?> clazz)，我们决定使用 **约定大于配置**，需要使用者遵循规定使用，避免为每个厂商而添加大量代码
+7. 修改如下
+    ```java
+    /**
+     * 参数构建器类，用于构建视频生成请求参数
+     */
+    public class ParamBuilder {
+        // 视频生成提示词
+        private String prompt;
+        // 使用的模型名称
+        private String model;
+        // 参考图像路径
+        private String image;
+        // 模型唯一标识
+        private String modelId;
+    
+        private Map<String, TypedObject<?>> params;
+    
+        /**
+         * 设置视频生成提示词
+         * @param prompt 提示词
+         * @return 参数构建器实例
+         */
+        public ParamBuilder prompt(String prompt) {
+            this.prompt = prompt;
+            this.params.put("prompt", TypedObject.valueOf(prompt, String.class));
+            return this;
+        }
+    
+        /**
+         * 设置使用的模型名称
+         * @param model 模型名称
+         * @return 参数构建器实例
+         */
+        public ParamBuilder model(String model) {
+            this.model = model;
+            this.params.put("model", TypedObject.valueOf(model, String.class));
+            return this;
+        }
+        
+        public ParamBuilder modelId(String modelId) {
+            this.modelId = modelId;
+            this.params.put("modelId", TypedObject.valueOf(modelId, String.class));
+            return this;
+        }
+        
+        /**
+         * 设置参考图像路径
+         * @param image 图像路径
+         * @return 参数构建器实例
+         */
+        public ParamBuilder image(String image) {
+            this.image = image;
+            this.params.put("image", TypedObject.valueOf(image, String.class));
+            return this;
+        }
+        
+        public ParamBuilder paramSet(String parmName, Object value, Class<?> type) {
+            this.params.put(parmName, TypedObject.valueOf(value, type));
+            return this;
+        }
+                
+        /**
+         * 执行视频生成请求
+         * @return 视频生成响应结果
+         */
+        public VideoResponse call() {
+            Assert.isTrue(StringUtils.hasText(model), "模型名称不能为空");
+            Assert.isTrue(StringUtils.hasText(prompt), "视频生成提示词不能为空");
+            LoggerUtils.logWarnIfTrue(StringUtils.hasText(model), "模型名称未指定, 将使用默认模型, 可能会出现错误！");
+            LoggerUtils.logWarnIfTrue(StringUtils.hasText(image), "参考图像未指定, 若模型不对，可能会出现错误！");
+            
+            // 根据模型名称获取模型参数
+            VideoOptions videoOptions = videoOptionsFactory.getVideoOptions(modelId);
+            // 如果无法准确获取modelId，那么将会尝试通过模型名称获取(并发出警告)
+            videoOptions = Objects.isNull(videoOptions) ? videoOptionsFactory.getVideoOptionsByModel(model) : videoOptions;
+            // 保存所有的参数，构建请求参数将会以这个为准
+            videoOptions.setAllParameters(this.params);
+            
+            // 创建视频提示对象
+            VideoPrompt videoPrompt = new VideoPrompt(prompt, options);
+            // 调用视频生成接口
+            return VideoClient.this.call(videoPrompt);
+        }
+    
+        /**
+         * 获取视频生成结果的输出信息
+         * @return 输出信息
+         */
+        public String getOutput() {
+            return this.call().getResult().getOutput();
+        }
+    }
+    ```
+8. 在这里，我们只留下了必要参数，这些参数作为校验参数使用，而Map将会作为重要的字段，参与后续的请求流程
+9. 我们继续完善其中的逻辑，首先看VideoOptions videoOptions = VideoOptionsFactory.getOptions(modelId);
+   - 这里使用到了策略模式，通过modelId与VideoOptions的实现类建立映射关系，我们通过Map优化这一映射关系的存储形式
+   - 我们需要将VideoOptionsFactory纳入Bean容器管理，因为这样可以直接使用Spring原生的依赖注入功能，只需要在Client中注入该工厂即可
+    ```java
+    /**
+     * 视频选项工厂类，用于管理和获取不同模型的视频选项配置
+     *
+     * @author 王玉涛
+     * @version 1.0
+     * @since 2025/10/3
+     */
+    @Slf4j
+    @Component
+    public class VideoOptionsFactory {
+    
+        /**
+         * 存储模型ID与视频选项映射关系的Map
+         * key: 模型ID
+         * value: 对应的视频选项配置
+         */
+        private final Map<String, VideoOptions> videoOptionsMap;
+    
+        /**
+         * 构造函数，初始化视频选项工厂
+         *
+         * @param videoOptionsList 视频选项列表，包含各种模型的配置信息
+         * @throws VideoModelOptionsInitException 当视频选项列表为null时抛出初始化异常
+         */
+        public VideoOptionsFactory(List<VideoOptions> videoOptionsList) {
+            log.info("初始化视频选项工厂: {}", videoOptionsList);
+            // 检查输入参数是否为空
+            if (videoOptionsList == null) {
+                log.warn("视频选项工厂初始化失败, 请检查配置");
+                throw new VideoModelOptionsInitException("视频选项工厂初始化失败, 请检查配置");
+            }
+            // 初始化映射表
+            videoOptionsMap = new HashMap<>();
+            // 遍历视频选项列表，建立模型ID与选项的映射关系
+            for (VideoOptions videoOptions : videoOptionsList) {
+                String modelId = videoOptions.getModelId();
+                videoOptionsMap.put(modelId, videoOptions);
+            }
+    
+            log.info("视频选项工厂初始化完成: {}", videoOptionsMap);
+        }
+    
+        /**
+         * 根据模型ID获取对应的视频选项配置
+         *
+         * @param modelId 模型ID
+         * @return 对应的视频选项配置
+         * @throws VideoModelOptionsInitException 当找不到对应模型ID的视频选项时抛出异常
+         */
+        public VideoOptions getVideoOptions(String modelId) {
+            VideoOptions videoOptions = videoOptionsMap.get(modelId);
+            // 检查是否存在对应的视频选项配置
+            if (videoOptions == null) {
+                log.warn("未找到对应的视频选项: {}", modelId);
+                throw new VideoModelOptionsInitException("未能根据modelId找到对应的视频选项: " + modelId);
+            }
+            return videoOptions;
+        }
+    
+        /**
+         * 根据模型名称获取对应的视频选项配置
+         *
+         * @param model 模型名称
+         * @return 对应的视频选项配置
+         * @throws VideoModelOptionsInitException 当找不到对应模型名称的视频选项时抛出异常
+         */
+        public VideoOptions getVideoOptionsByModel(String model) {
+            return videoOptionsMap.entrySet()
+                    .stream()
+                    .filter(videoOptionsMap -> videoOptionsMap.getValue().getModel().equals(model))
+                    .findAny()
+                    .orElseThrow(() -> new VideoModelOptionsNotFoundException("未能根据model找到对应的视频选项: " + model))
+                    .getValue();
+        }
+    }
+    ```
