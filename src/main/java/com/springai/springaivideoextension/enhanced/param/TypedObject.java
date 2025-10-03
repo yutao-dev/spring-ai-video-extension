@@ -1,10 +1,9 @@
 package com.springai.springaivideoextension.enhanced.param;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.util.Assert;
+
+import java.util.Objects;
 
 /**
  * @author 王玉涛
@@ -14,17 +13,20 @@ import org.springframework.util.Assert;
 @Data
 @Getter
 @EqualsAndHashCode
+@NoArgsConstructor
 @AllArgsConstructor
 public class TypedObject<T> {
     /**
      * 存储的实际值对象
      */
-    private final Object value;
+    private Object value;
     
     /**
      * 值对象的类型信息
      */
-    private final Class<T> type;
+    private Class<T> type;
+
+    private static final TypedObject<?> INSTANCE = new TypedObject<>(null, null);
 
     /**
      * 创建 TypedObject 实例的静态工厂方法
@@ -48,7 +50,7 @@ public class TypedObject<T> {
      * @throws ClassCastException 当值无法转换为目标类型时抛出
      */
     public T getValue() {
-        return type.cast(value);
+        return (Objects.isNull(value) || Objects.isNull(type)) ? null : type.cast(value);
     }
 
     /**
@@ -59,5 +61,14 @@ public class TypedObject<T> {
      */
     public boolean isTypeOf(Class<?> targetType) {
         return targetType != null && targetType.isAssignableFrom(this.type);
+    }
+
+    /**
+     * 获取一个空 TypedObject 实例
+     *
+     * @return 空 TypedObject 实例
+     */
+    public static TypedObject<?> getInstance() {
+        return TypedObject.INSTANCE;
     }
 }

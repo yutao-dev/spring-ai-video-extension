@@ -7,10 +7,13 @@ import com.springai.springaivideoextension.common.util.BeanUtils;
 import com.springai.springaivideoextension.common.util.JsonUtils;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 视频生成选项实现类
@@ -24,6 +27,8 @@ import java.util.Map;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SiliconCloudVideoOptions implements VideoOptions {
 
@@ -114,17 +119,25 @@ public class SiliconCloudVideoOptions implements VideoOptions {
      */
     @Override
     public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
-        return VideoOptionsImpl.builder()
-                .modelId(BeanUtils.nullThenChooseOther(params.get("modelId"), this.modelId, String.class))
-                .modelName(BeanUtils.nullThenChooseOther(params.get("modelName"), this.modelName, String.class))
-                .modelDescription(BeanUtils.nullThenChooseOther(params.get("modelDescription"), this.modelDescription, String.class))
-                .prompt(BeanUtils.nullThenChooseOther(params.get("prompt"), this.prompt, String.class))
-                .model(BeanUtils.nullThenChooseOther(params.get("model"), this.model, String.class))
-                .imageSize(BeanUtils.nullThenChooseOther(params.get("imageSize"), this.imageSize, String.class))
-                .negativePrompt(BeanUtils.nullThenChooseOther(params.get("negativePrompt"), this.negativePrompt, String.class))
-                .image(BeanUtils.nullThenChooseOther(params.get("image"), this.image, String.class))
-                .seed(BeanUtils.nullThenChooseOther(params.get("seed"), this.seed, Long.class))
+        return HuoShanVideoOptions.builder()
+                .modelId(BeanUtils.nullThenChooseOther(getParameter(params, "modelId").getValue(), this.modelId, String.class))
+                .modelName(BeanUtils.nullThenChooseOther(getParameter(params, "modelName").getValue(), this.modelName, String.class))
+                .modelDescription(BeanUtils.nullThenChooseOther(getParameter(params, "modelDescription").getValue(), this.modelDescription, String.class))
+                .prompt(BeanUtils.nullThenChooseOther(getParameter(params, "prompt").getValue(), this.prompt, String.class))
+                .model(BeanUtils.nullThenChooseOther(getParameter(params, "model").getValue(), this.model, String.class))
+                .image(BeanUtils.nullThenChooseOther(getParameter(params, "image").getValue(), this.image, String.class))
                 .allParameters(params)
                 .build();
+    }
+
+    /**
+     * 获取参数
+     *
+     * @param key 参数键
+     * @return 参数对象
+     */
+    private TypedObject<?> getParameter(Map<String, TypedObject<?>> map, String key) {
+        TypedObject<?> typedObject = map.get(key);
+        return Objects.isNull(typedObject) ? TypedObject.getInstance() : typedObject;
     }
 }
