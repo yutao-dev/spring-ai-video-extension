@@ -868,5 +868,5 @@
     2025-10-03T22:59:36.640+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 保存视频数据成功: in:memory:key:cgt-20251003225937-jvvqx
     cgt-20251003225937-jvvqx
     ```
-   - 可以看到，请求的链路成功！后续我们将针对第二轮的定时轮询部分进行适配化改造
+   - 可以看到，请求的链路成功！后续我们将针对第二轮的定时轮询部分以及火山方舟的额外参数部分进行适配化改造
 6. **到此，VideClient的适配化改造就完成了！我们后续将会从VideoApi再次入手**
