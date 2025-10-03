@@ -42,10 +42,11 @@ public class VideoService {
         VideoClient.ParamBuilder paramBuilder = videoClient.param()
                 .prompt(request.getPrompt())
                 .model(request.getModel())
-                .imageSize(request.getVideoSize())
-                .negativePrompt(request.getNegativePrompt())
+                // 使用paramSet方法设置视频尺寸参数
+                .paramSet("videoSize", request.getVideoSize(), String.class)
+                .paramSet("negativePrompt", request.getNegativePrompt(), String.class)
                 .image(request.getImage())
-                .seed(request.getSeed());
+                .paramSet("seed", request.getSeed(), Long.class);
 
         if (!Objects.isNull(request.getImage())) {
 
