@@ -162,11 +162,11 @@ public class VideoClient {
             VideoOptions videoOptions = videoOptionsFactory.getVideoOptions(modelId);
             // 如果无法准确获取modelId，那么将会尝试通过模型名称获取(并发出警告)
             videoOptions = Objects.isNull(videoOptions) ? videoOptionsFactory.getVideoOptionsByModel(model) : videoOptions;
-            // 保存所有的参数，构建请求参数将会以这个为准
-            videoOptions.setAllParameters(this.params);
+            // 深拷贝所有参数
+            videoOptions = videoOptions.fromParameters(this.params);
 
             // 创建视频提示对象
-            VideoPrompt videoPrompt = new VideoPrompt(prompt, options);
+            VideoPrompt videoPrompt = new VideoPrompt(prompt, videoOptions);
             // 调用视频生成接口
             return VideoClient.this.call(videoPrompt);
         }

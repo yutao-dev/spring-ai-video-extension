@@ -583,5 +583,28 @@
     }
     ```
 10. 我们再完善videoOptions.setAllParameters(this.params);
-    - 这里的set方法很显然会出现线程安全问题，因此我们改成深拷贝，即创建一个新的对象，并赋值给videoOptions
-    - 
+    - 这里的set方法很显然会出现线程安全问题，并且modelId等重要参数可能被覆盖，因此我们改成深拷贝，即创建一个新的对象，并赋值给videoOptions
+    ```java
+     /**
+     * 执行视频生成请求
+     * @return 视频生成响应结果
+     */
+    public VideoResponse call() {
+        Assert.isTrue(StringUtils.hasText(model), "模型名称不能为空");
+        Assert.isTrue(StringUtils.hasText(prompt), "视频生成提示词不能为空");
+        LoggerUtils.logWarnIfTrue(StringUtils.hasText(model), "模型名称未指定, 将使用默认模型, 可能会出现错误！");
+        LoggerUtils.logWarnIfTrue(StringUtils.hasText(image), "参考图像未指定, 若模型不对，可能会出现错误！");
+    
+        // 根据模型名称获取模型参数
+        VideoOptions videoOptions = videoOptionsFactory.getVideoOptions(modelId);
+        // 如果无法准确获取modelId，那么将会尝试通过模型名称获取(并发出警告)
+        videoOptions = Objects.isNull(videoOptions) ? videoOptionsFactory.getVideoOptionsByModel(model) : videoOptions;
+        // 重要改造：深拷贝所有参数
+        videoOptions = videoOptions.fromParameters(this.params);
+    
+        // 创建视频提示对象
+        VideoPrompt videoPrompt = new VideoPrompt(prompt, videoOptions);
+        // 调用视频生成接口
+        return VideoClient.this.call(videoPrompt);
+    }
+    ```
