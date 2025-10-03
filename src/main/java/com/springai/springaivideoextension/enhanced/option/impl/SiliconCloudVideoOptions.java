@@ -30,28 +30,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SiliconCloudVideoOptions implements VideoOptions {
-
-    /**
-     * 模型唯一标识符
-     * 用于内部识别和区分不同的视频生成模型
-     */
-    @JsonIgnore
-    private String modelId;
-    
-    /**
-     * 模型显示名称
-     * 用于前端展示和用户界面显示的模型名称
-     */
-    @JsonIgnore
-    private String modelName;
-    
-    /**
-     * 模型详细描述信息
-     * 包含模型的功能特点、适用场景等详细说明
-     */
-    @JsonIgnore
-    private String modelDescription;
+public class SiliconCloudVideoOptions extends AbstractVideoOptions {
 
     /**
      * 视频生成的主要提示词
@@ -102,30 +81,19 @@ public class SiliconCloudVideoOptions implements VideoOptions {
     private Map<String, TypedObject<?>> allParameters;
 
     /**
-     * 构建JSON请求体
-     *
-     * @return JSON请求体字符串
-     */
-    @Override
-    public String buildJsonBody() {
-        // 因为这里的参数没有嵌套或者其他的特殊情况，所以这里直接返回即可
-        return JsonUtils.writeValueAsString(this);
-    }
-
-    /**
      * 深拷贝所有参数
      *
      * @param params 参数映射关系
      */
     @Override
     public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
-        return HuoShanVideoOptions.builder()
-                .modelId(BeanUtils.nullThenChooseOther(getParameter(params, "modelId").getValue(), this.modelId, String.class))
-                .modelName(BeanUtils.nullThenChooseOther(getParameter(params, "modelName").getValue(), this.modelName, String.class))
-                .modelDescription(BeanUtils.nullThenChooseOther(getParameter(params, "modelDescription").getValue(), this.modelDescription, String.class))
+        return SiliconCloudVideoOptions.builder()
                 .prompt(BeanUtils.nullThenChooseOther(getParameter(params, "prompt").getValue(), this.prompt, String.class))
                 .model(BeanUtils.nullThenChooseOther(getParameter(params, "model").getValue(), this.model, String.class))
                 .image(BeanUtils.nullThenChooseOther(getParameter(params, "image").getValue(), this.image, String.class))
+                .imageSize(BeanUtils.nullThenChooseOther(getParameter(params, "imageSize").getValue(), this.imageSize, String.class))
+                .negativePrompt(BeanUtils.nullThenChooseOther(getParameter(params, "negativePrompt").getValue(), this.negativePrompt, String.class))
+                .seed(BeanUtils.nullThenChooseOther(getParameter(params, "seed").getValue(), this.seed, Long.class))
                 .allParameters(params)
                 .build();
     }
@@ -137,7 +105,6 @@ public class SiliconCloudVideoOptions implements VideoOptions {
      * @return 参数对象
      */
     private TypedObject<?> getParameter(Map<String, TypedObject<?>> map, String key) {
-        TypedObject<?> typedObject = map.get(key);
-        return Objects.isNull(typedObject) ? TypedObject.getInstance() : typedObject;
+        return map.getOrDefault(key, TypedObject.getInstance());
     }
 }

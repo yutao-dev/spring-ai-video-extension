@@ -9,6 +9,7 @@ import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Map;
 
@@ -24,29 +25,9 @@ import java.util.Map;
  */
 @Data
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class VideoOptionsImpl implements VideoOptions {
-
-    /**
-     * 模型唯一标识符
-     * 用于内部识别和区分不同的视频生成模型
-     */
-    @JsonIgnore
-    private String modelId;
-
-    /**
-     * 模型显示名称
-     * 用于前端展示和用户界面显示的模型名称
-     */
-    @JsonIgnore
-    private String modelName;
-
-    /**
-     * 模型详细描述信息
-     * 包含模型的功能特点、适用场景等详细说明
-     */
-    @JsonIgnore
-    private String modelDescription;
+public class VideoOptionsImpl extends AbstractVideoOptions {
 
     /**
      * 视频生成的主要提示词
@@ -93,17 +74,6 @@ public class VideoOptionsImpl implements VideoOptions {
     @JsonIgnore
     private Map<String, TypedObject<?>> allParameters;
 
-
-    /**
-     * 构建JSON请求体
-     *
-     * @return JSON请求体字符串
-     */
-    @Override
-    public String buildJsonBody() {
-        return JsonUtils.writeValueAsString(this);
-    }
-
     /**
      * 深拷贝所有参数
      *
@@ -112,9 +82,6 @@ public class VideoOptionsImpl implements VideoOptions {
     @Override
     public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
         return VideoOptionsImpl.builder()
-                .modelId(BeanUtils.nullThenChooseOther(params.get("modelId"), this.modelId, String.class))
-                .modelName(BeanUtils.nullThenChooseOther(params.get("modelName"), this.modelName, String.class))
-                .modelDescription(BeanUtils.nullThenChooseOther(params.get("modelDescription"), this.modelDescription, String.class))
                 .prompt(BeanUtils.nullThenChooseOther(params.get("prompt"), this.prompt, String.class))
                 .model(BeanUtils.nullThenChooseOther(params.get("model"), this.model, String.class))
                 .imageSize(BeanUtils.nullThenChooseOther(params.get("imageSize"), this.imageSize, String.class))

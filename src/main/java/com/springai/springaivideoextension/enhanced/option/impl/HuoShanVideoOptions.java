@@ -32,29 +32,9 @@ import java.util.Objects;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HuoShanVideoOptions implements VideoOptions {
-
-    /**
-     * 模型唯一标识符
-     * 用于内部识别和区分不同的视频生成模型
-     */
-    @JsonIgnore
-    private String modelId;
-    
-    /**
-     * 模型显示名称
-     * 用于前端展示和用户界面显示的模型名称
-     */
-    @JsonIgnore
-    private String modelName;
-    
-    /**
-     * 模型详细描述信息
-     * 包含模型的功能特点、适用场景等详细说明
-     */
-    @JsonIgnore
-    private String modelDescription;
+public class HuoShanVideoOptions extends AbstractVideoOptions {
 
     /**
      * 视频生成的主要提示词
@@ -115,9 +95,6 @@ public class HuoShanVideoOptions implements VideoOptions {
     @Override
     public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
         return HuoShanVideoOptions.builder()
-                .modelId(BeanUtils.nullThenChooseOther(getParameter(params, "modelId").getValue(), this.modelId, String.class))
-                .modelName(BeanUtils.nullThenChooseOther(getParameter(params, "modelName").getValue(), this.modelName, String.class))
-                .modelDescription(BeanUtils.nullThenChooseOther(getParameter(params, "modelDescription").getValue(), this.modelDescription, String.class))
                 .prompt(BeanUtils.nullThenChooseOther(getParameter(params, "prompt").getValue(), this.prompt, String.class))
                 .model(BeanUtils.nullThenChooseOther(getParameter(params, "model").getValue(), this.model, String.class))
                 .image(BeanUtils.nullThenChooseOther(getParameter(params, "image").getValue(), this.image, String.class))

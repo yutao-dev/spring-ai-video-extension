@@ -644,3 +644,79 @@
 1. 现在我们需要针对火山方舟的API文档进行适配化改造，我们根据上述的API文档示例，可以先进行提示词的引入，再进行操作参数的引入
 2. 我们通过buildJsonBody，获取请求体参数，同时通过适配化改造，添加新的类
     - 我们通过单元测试，测试该类的初始版本是否可以正确序列化
+    ```java
+    /**
+     * @author 王玉涛
+     * @version 1.0
+     * @since 2025/10/3
+     */
+    class VideoOptionsJsonBodyTest {
+    
+        /**
+         * 测试火山视频选项配置的JSON构建功能
+         * 该测试用例验证HuoShanVideoOptions能否正确处理参数并生成符合预期的JSON请求体
+         */
+        @Test
+        void testHuoShanVideoOptions() {
+            // 初始化参数映射表，用于存储视频生成所需的各种配置参数
+            Map<String, TypedObject<?>> params = new HashMap<>();
+    
+            // 设置模型基本属性参数
+            params.put("modelId", TypedObject.valueOf("huoshan", String.class));           // 模型ID
+            params.put("modelName", TypedObject.valueOf("火山视频", String.class));         // 模型名称
+            params.put("modelDescription", TypedObject.valueOf("火山视频生成视频", String.class)); // 模型描述
+    
+            // 设置视频生成核心参数
+            params.put("prompt", TypedObject.valueOf("一个boy在打篮球", String.class));      // 视频生成提示词
+            params.put("model", TypedObject.valueOf("video-generator-v1", String.class));   // 使用的具体模型版本
+            params.put("image", TypedObject.valueOf("https://picsum.photos/200/300", String.class)); // 参考图像URL
+    
+            // 创建并初始化火山视频选项实例
+            VideoOptions videoOptions = new HuoShanVideoOptions();
+            videoOptions = videoOptions.fromParameters(params);  // 通过参数配置视频选项
+    
+            // 输出构建的JSON请求体，用于验证格式是否正确
+            System.out.println(videoOptions.buildJsonBody());
+        }
+    
+        /**
+         * 测试硅基流动视频选项配置的JSON构建功能
+         * 该测试用例验证SiliconCloudVideoOptions能否正确处理参数并生成符合预期的JSON请求体
+         */
+        @Test
+        void testSilonCloudVideoOptions() {
+            // 初始化参数映射表，用于存储视频生成所需的各种配置参数
+            Map<String, TypedObject<?>> params = new HashMap<>();
+    
+            // 设置模型基本属性参数
+            params.put("modelId", TypedObject.valueOf("silongcloud", String.class));       // 模型ID
+            params.put("modelName", TypedObject.valueOf("硅基流动", String.class));         // 模型名称
+            params.put("modelDescription", TypedObject.valueOf("思龙云视频生成视频", String.class)); // 模型描述
+    
+            // 设置视频生成核心参数
+            params.put("prompt", TypedObject.valueOf("一个boy在打篮球", String.class));      // 视频生成提示词
+            params.put("model", TypedObject.valueOf("video-generator-v1", String.class));   // 使用的具体模型版本
+            params.put("image", TypedObject.valueOf("https://picsum.photos/200/300", String.class)); // 参考图像URL
+            params.put("seed", TypedObject.valueOf(1234567890L, Long.class));
+            params.put("imageSize", TypedObject.valueOf("1024x1024", String.class));
+            params.put("negativePrompt", TypedObject.valueOf("bad, ugly, low quality", String.class));
+    
+            // 创建并初始化硅基流动视频选项实例
+            VideoOptions videoOptions = new SiliconCloudVideoOptions();
+            videoOptions = videoOptions.fromParameters(params);  // 通过参数配置视频选项
+    
+            // 输出构建的JSON请求体，用于验证格式是否正确
+            System.out.println(videoOptions.buildJsonBody());
+        }
+    }
+    ```
+   - 测试结果示例
+    ```java
+    {"prompt":"一个boy在打篮球","model":"video-generator-v1","image_size":"1024x1024","negative_prompt":"bad, ugly, low quality","image":"https://picsum.photos/200/300","seed":1234567890}
+    {"model":"video-generator-v1","content":[{"type":"text","text":"一个boy在打篮球"},{"type":"image_url","image_url":"https://picsum.photos/200/300"}]}
+    ```
+   - 我们经过10w次压测，得出结果如下
+    ```java
+    平均耗时: SilonCloud: 0.00818ms, HuoShan: 0.00402ms
+    ```
+   - 当前的压测结果表明，两者从**深拷贝 ——> 序列化**这个过程的性能都是合格的，无需继续优化
