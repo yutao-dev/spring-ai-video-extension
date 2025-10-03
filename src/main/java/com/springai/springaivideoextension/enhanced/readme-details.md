@@ -198,3 +198,29 @@
    - modelName: 模型名称
    - modelDescription: 模型描述
 4. 这些字段不参与请求发送，因此需要使用@JsonIgnore，这些字段是作为策略模式中重要的模型参数匹配信息而存在的
+5. 同时为了保证每个参数策略都可以被识别，需要在[VideoOptions.java](option/VideoOptions.java)额外添加这三个参数的getter方法
+    ```java
+    /**
+     * 获取视频生成模型的唯一标识符
+     * 用于区分不同的视频生成模型实例
+     *
+     * @return 模型ID字符串
+     */
+    String getModelId();
+    
+    /**
+     * 获取视频生成模型的显示名称
+     * 用于在用户界面中展示模型名称
+     *
+     * @return 模型名称字符串
+     */
+    String getModelName();
+    
+    /**
+     * 获取视频生成模型的详细描述信息
+     * 包含模型的功能特点、适用场景等说明
+     *
+     * @return 模型描述字符串
+     */
+    String getModelDescription();
+    ```

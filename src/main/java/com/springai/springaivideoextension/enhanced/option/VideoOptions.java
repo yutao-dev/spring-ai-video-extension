@@ -14,6 +14,30 @@ import org.springframework.ai.model.ModelOptions;
 public interface VideoOptions extends ModelOptions {
 
     /**
+     * 获取视频生成模型的唯一标识符
+     * 用于区分不同的视频生成模型实例
+     *
+     * @return 模型ID字符串
+     */
+    String getModelId();
+    
+    /**
+     * 获取视频生成模型的显示名称
+     * 用于在用户界面中展示模型名称
+     *
+     * @return 模型名称字符串
+     */
+    String getModelName();
+    
+    /**
+     * 获取视频生成模型的详细描述信息
+     * 包含模型的功能特点、适用场景等说明
+     *
+     * @return 模型描述字符串
+     */
+    String getModelDescription();
+
+    /**
      * 获取视频生成的主要提示词
      * 用于描述期望生成的视频内容
      *
