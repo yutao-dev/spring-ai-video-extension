@@ -2,6 +2,8 @@
 
 本模块是基于 Spring AI 框架构建的视频生成扩展快速入门模块。它严格遵循 Spring AI 的核心设计哲学与架构规范，为开发者提供了一套完整的视频处理解决方案，涵盖视频生成、数据存储以及任务状态管理等核心功能。
 
+该模块支持多家AI服务提供商的视频生成API，包括硅基流动和火山方舟等主流平台。
+
 ## 📁 项目结构
 
 ```
@@ -31,7 +33,11 @@ quickstart/
    - 当提供 `image` 参数时，系统会自动切换到图生视频模型 `Wan-AI/Wan2.2-I2V-A14B`
    - 当未提供 `image` 参数时，使用文生视频模型 `Wan-AI/Wan2.2-T2V-A14B`
 
-3. **异步处理机制**：
+3. **多厂商支持**：
+   - 支持硅基流动和火山方舟等主流AI平台
+   - 通过 `modelId` 参数指定厂商（0-硅基流动，1-火山方舟）
+
+4. **异步处理机制**：
    - 视频生成是异步过程，接口立即返回 requestId
    - 需要通过 `/api/videos/status/{requestId}` 接口轮询获取结果
    - 视频生成时间通常在几分钟左右，请耐心等待
@@ -136,7 +142,23 @@ public class EnhancedVideoConfig {
      */
     @Bean
     public VideoClient videoClient(VideoStorage videoStorage) {
-        return new VideoClient(videoModel(), videoStorage);
+        // 初始化多厂商支持
+        SiliconCloudVideoOptions siliconCloudVideoOptions = new SiliconCloudVideoOptions();
+        siliconCloudVideoOptions.setModelId("0");
+        
+        HuoShanVideoOptions huoShanVideoOptions = new HuoShanVideoOptions();
+        huoShanVideoOptions.setModelId("1");
+        
+        VideoOptionsFactory videoOptionsFactory = new VideoOptionsFactory(
+            List.of(siliconCloudVideoOptions, huoShanVideoOptions)
+        );
+        
+        Map<String, VideoModel> videoModelMap = Map.of(
+            "0", videoModel(),  // 硅基流动
+            "1", videoModel()   // 火山方舟
+        );
+        
+        return new VideoClient(videoModel(), videoStorage, videoModelMap, videoOptionsFactory);
     }
 }
 ```
@@ -157,6 +179,7 @@ POST /api/videos
 |----------------|--------|----|----------------------------|
 | prompt         | String | 是  | 视频生成提示词                    |
 | model          | String | 否  | 使用的模型名称，默认根据是否有image参数自动选择 |
+| modelId        | String | 否  | 厂商ID，0-硅基流动，1-火山方舟       |
 | videoSize      | String | 否  | 生成视频的尺寸，如 "512*512"        |
 | negativePrompt | String | 否  | 负面提示词，排除不希望出现的内容           |
 | image          | String | 否  | 参考图像路径或URL                 |
@@ -216,23 +239,27 @@ GET /api/videos/status/{requestId}
 
 ### curl 示例
 
-**生成视频（文生视频）：**
+**生成视频（文生视频-硅基流动）：**
 ```bash
 curl -X POST http://localhost:8080/api/videos \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "一只可爱的猫咪在花园里玩耍",
+    "model": "Wan-AI/Wan2.2-T2V-A14B",
+    "modelId": "0",
     "videoSize": "512*512",
     "negativePrompt": "模糊,低质量"
   }'
 ```
 
-**生成视频（图生视频）：**
+**生成视频（图生视频-火山方舟）：**
 ```bash
 curl -X POST http://localhost:8080/api/videos \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "让图片中的人物动起来",
+    "model": "doubao-seedance-1-0-lite-t2v-250428",
+    "modelId": "1",
     "image": "https://example.com/image.jpg",
     "videoSize": "512*512"
   }'
@@ -265,14 +292,24 @@ VideoModel videoModel = new VideoModelImpl(videoApi);
 VideoStorage videoStorage = new InMemoryVideoStorage();
 VideoClient videoClient = new VideoClient(videoModel, videoStorage);
 
-// 4. 调用视频生成
+// 4. 调用视频生成（硅基流动）
 String requestId = videoClient.param()
         .prompt("一只柯基在沙滩奔跑")
         .model("Wan-AI/Wan2.2-T2V-A14B")
+        .modelId("0")
         .negativePrompt("模糊,低质量")
         .getOutput();
 
 System.out.println("视频生成请求ID: " + requestId);
+
+// 5. 调用视频生成（火山方舟）
+String requestId2 = videoClient.param()
+        .prompt("一只柯基在沙滩奔跑")
+        .model("doubao-seedance-1-0-lite-t2v-250428")
+        .modelId("1")
+        .getOutput();
+
+System.out.println("视频生成请求ID: " + requestId2);
 ```
 
 ## 📦 依赖

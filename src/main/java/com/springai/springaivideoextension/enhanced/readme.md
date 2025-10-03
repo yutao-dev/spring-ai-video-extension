@@ -1,6 +1,8 @@
 # Spring AI Video Extension
 
-本模块是基于 Spring AI 框架构建的视频生成扩展快速入门模块。它严格遵循 Spring AI 的核心设计哲学与架构规范，为开发者提供了一套完整的视频处理解决方案，涵盖视频生成、数据存储以及任务状态管理等核心功能。
+本模块是基于 Spring AI 框架构建的视频生成扩展模块。它严格遵循 Spring AI 的核心设计哲学与架构规范，为开发者提供了一套完整的视频处理解决方案，涵盖视频生成、数据存储以及任务状态管理等核心功能。
+
+该模块支持多家AI服务提供商的视频生成API，包括硅基流动和火山方舟等主流平台。
 
 ## 📁 项目结构
 
@@ -21,19 +23,18 @@ enhanced/
 │       └── VideoResult.java  # 视频生成结果数据
 ├── option/                   # 视频选项配置
 │   ├── VideoOptions.java     # 视频选项接口
+│   ├── factory/              # 视频选项工厂
+│   │   └── VideoOptionsFactory.java # 视频选项工厂类
 │   └── impl/                 
+│       ├── HuoShanVideoOptions.java # 火山方舟视频选项实现
+│       ├── SiliconCloudVideoOptions.java # 硅基流动视频选项实现
 │       └── VideoOptionsImpl.java # 视频选项实现
 ├── storage/                  # 视频存储管理
 │   ├── VideoStorage.java     # 视频存储接口
-│   ├── VideoStorageStatus.java # 视频存储状态枚举
 │   └── impl/                 
 │       └── InMemoryVideoStorage.java # 内存存储实现
 └── trimer/                   # 视频定时任务处理
     ├── VideoTimer.java       # 视频任务定时扫描器
-    ├── config/               
-    │   └── VideoTimerConfig.java # 定时任务配置
-    ├── enums/                
-    │   └── VideoStorageStatus.java # 存储状态枚举
     └── response/             
         └── VideoScanResponse.java # 视频扫描响应
 ```
@@ -41,15 +42,17 @@ enhanced/
 ## ⚠️ 常见问题与踩坑提示
 
 ### 模型使用注意事项
-1. **模型选择**：系统支持两种模型：
+1. **模型选择**：系统支持多种模型：
    - 文生视频模型：`Wan-AI/Wan2.2-T2V-A14B`
    - 图生视频模型：`Wan-AI/Wan2.2-I2V-A14B`
+   - 火山方舟模型：`doubao-seedance-1-0-lite-t2v-250428`
    - 不同模型有不同用途，不能混用
 
 2. **参数配置**：
    - `prompt`：视频生成提示词，不能为空
    - `image`：图生视频时必须提供，文生视频时应为空
    - `model`：必须指定正确的模型名称
+   - `modelId`：用于指定厂商，0表示硅基流动，1表示火山方舟
 
 ### 定时任务注意事项
 1. **定时任务依赖配置**：确保在 `application.yaml` 中正确配置定时任务参数
@@ -72,6 +75,7 @@ enhanced/
 - 提供用户友好的 API 接口
 - 支持链式调用和参数构建器模式
 - 集成视频存储功能
+- 支持多厂商API适配
 
 ### 3. 视频存储 (VideoStorage)
 - 提供 [VideoStorage](file:///D:/program-test2/programming/spring-ai-video-extension/src/main/java/com/springai/springaivideoextension/enhanced/storage/VideoStorage.java#L12-L76) 接口和 [InMemoryVideoStorage](file:///D:/program-test2/programming/spring-ai-video-extension/src/main/java/com/springai/springaivideoextension/enhanced/storage/impl/InMemoryVideoStorage.java#L15-L123) 内存实现
@@ -83,12 +87,19 @@ enhanced/
 - 定期查询任务状态并更新存储中的状态
 - 支持超时处理和任务清理
 
+### 5. 多厂商适配
+- 支持硅基流动平台：使用标准字段映射方式
+- 支持火山方舟平台：采用特殊的content结构适配
+- 通过策略模式和工厂模式实现无缝切换
+- 支持文本到视频（Text-to-Video）和图像到视频（Image-to-Video）生成
+
 ## ⚙️ 配置选项
 
 视频生成支持以下配置选项：
 
 - `prompt`: 视频生成提示词
 - `model`: 使用的模型名称
+- `modelId`: 厂商ID（0-硅基流动，1-火山方舟）
 - `imageSize`: 生成视频的尺寸
 - `negativePrompt`: 负面提示词，排除不希望出现的内容
 - `image`: 参考图像路径
@@ -116,14 +127,24 @@ VideoModel videoModel = new VideoModelImpl(videoApi);
 VideoStorage videoStorage = new InMemoryVideoStorage();
 VideoClient videoClient = new VideoClient(videoModel, videoStorage);
 
-// 4. 调用视频生成
+// 4. 调用视频生成（硅基流动）
 String requestId = videoClient.param()
         .prompt("一只柯基在沙滩奔跑")
         .model("Wan-AI/Wan2.2-T2V-A14B")
+        .modelId("0")
         .negativePrompt("模糊,低质量")
         .getOutput();
 
 System.out.println("视频生成请求ID: " + requestId);
+
+// 5. 调用视频生成（火山方舟）
+String requestId2 = videoClient.param()
+        .prompt("一只柯基在沙滩奔跑")
+        .model("doubao-seedance-1-0-lite-t2v-250428")
+        .modelId("1")
+        .getOutput();
+
+System.out.println("视频生成请求ID: " + requestId2);
 ```
 
 ## ⚙️ 定时任务配置

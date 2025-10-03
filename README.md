@@ -1,4 +1,5 @@
-# spring-ai-video-extision
+# Spring AI Video Extension
+
 > 来源：飞书文档 https://dcn7850oahi9.feishu.cn/docx/DDehdPBMSoGTycxmFTLcER4In0F?from=from_copylink
 
 ---
@@ -14,6 +15,12 @@
   - **去除冗余 Request 封装类**
   - **减少一次深拷贝**
   - **字段扩展更直观**
+
+### 2. 多厂商支持
+- **硅基流动**：使用标准字段映射方式
+- **火山方舟**：采用特殊的content结构适配
+- 通过策略模式和工厂模式实现无缝切换
+- 支持文本到视频（Text-to-Video）和图像到视频（Image-to-Video）生成
 
 ---
 
@@ -85,19 +92,18 @@ enhanced
 │     └─ VideoResult.java
 ├─ option
 │  ├─ VideoOptions.java
+│  ├─ factory
+│  │  └─ VideoOptionsFactory.java
 │  └─ impl
+│     ├─ HuoShanVideoOptions.java
+│     ├─ SiliconCloudVideoOptions.java
 │     └─ VideoOptionsImpl.java
 ├─ storage
 │  ├─ VideoStorage.java
-│  ├─ VideoStorageStatus.java
 │  └─ impl
 │     └─ InMemoryVideoStorage.java
 └─ trimer
    ├─ VideoTimer.java
-   ├─ config
-   │  └─ VideoTimerConfig.java
-   ├─ enums
-   │  └─ VideoStorageStatus.java
    └─ response
       └─ VideoScanResponse.java
 ```
@@ -116,23 +122,20 @@ enhanced
 
 > ⚠️ 注意：`ai.video.timer.key-prefix` 默认值已修正为 `in:memory:key:`（以冒号结尾），旧版本缺少末尾冒号可能导致键值处理异常
 
+### 4. 多厂商支持
+
+项目支持多家AI服务提供商的视频生成API：
+
+1. **硅基流动**：使用标准字段映射方式
+2. **火山方舟**：采用特殊的content结构适配
+3. 通过策略模式和工厂模式实现无缝切换
+4. 支持文本到视频（Text-to-Video）和图像到视频（Image-to-Video）生成
+
 ---
 
 ### 4. 单元测试类
 
 ```java
-package com.ai.springaidemo02.ai.video.custom;
-
-import com.ai.springaidemo02.ai.video.custom.api.VideoApi;
-import com.ai.springaidemo02.ai.video.custom.client.VideoClient;
-import com.ai.springaidemo02.ai.video.custom.model.impl.VideoModelImpl;
-import com.ai.springaidemo02.ai.video.custom.option.impl.VideoOptionsImpl;
-import com.ai.springaidemo02.ai.video.custom.request.VideoPrompt;
-import com.ai.springaidemo02.ai.video.custom.response.VideoResponse;
-import com.ai.springaidemo02.ai.video.custom.storage.impl.InMemoryVideoStorage;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
 @SpringBootTest
 class CustomVideoModelTest {
 
@@ -174,6 +177,27 @@ class CustomVideoModelTest {
 
 1. 改配置 → 2. 换 key → 3. 跑测试 → 4. 拿 `requestId` → 5. 等轮询完成 → 6. 拿视频地址！
 
-### 6. 后续规划
+### 6. 多厂商配置示例
+
+项目支持配置多个厂商的API密钥和端点：
+
+```yaml
+ai:
+  video:
+    api-keys:
+      - ${SPRING_AI_OPENAI_API_KEY}  # 硅基流动
+      - ${HUO_SHAN_API_KEY}          # 火山方舟
+    base-urls:
+      - ${SPRING_AI_OPENAI_BASE_URL} # 硅基流动
+      - ${HUO_SHAN_BASE_URL}         # 火山方舟
+    video-paths:
+      - ${SPRING_AI_OPENAI_VIDEO_PATH}
+      - ${HUO_SHAN_VIDEO_PATH}
+    video-status-paths:
+      - ${SPRING_AI_OPENAI_VIDEO_STATUS_PATH}
+      - ${HUO_SHAN_VIDEO_STATUS_PATH}
+```
+
+### 7. 后续规划
 
 1. v1.1.0	进一步优化体验功能	 🚧 开发中
