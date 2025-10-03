@@ -4,8 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
+import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.Map;
 
 /**
  * 视频生成选项实现类
@@ -84,4 +87,10 @@ public class HuoShanVideoOptions implements VideoOptions {
      */
     @JsonProperty("seed")
     private Long seed;
+
+    /**
+     * 所有参数
+     */
+    @JsonIgnore
+    private Map<String, TypedObject<?>> allParameters;
 }

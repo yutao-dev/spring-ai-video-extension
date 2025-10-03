@@ -333,3 +333,49 @@
     |:-----|:-------|:-------------------------------------|
     | `id` | String | 视频生成任务ID。需凭此ID通过“查询视频生成任务API”获取最终结果。 |
 7. 根据上述的参数，我们进行VideoOptions的设置：
+   - 创建[HuoShanVideoOptions.java](option/impl/HuoShanVideoOptions.java)
+   - 适配化改造：因为引入了参数请求形式差异较大的火山方舟，我们这时候需要进行权衡，是否依旧保持硬性参数统一？如果要保持硬性参数统一，那么VideoOptions中就需要更复杂的适配流程
+   - 而越来越多的厂商引入，反而让VideoOptions的限制逐步减弱，因此，我们选择更加灵活的参数传递方式，即通过Map<String, Object>映射
+   - 而如何保证序列化过程中，不丢失类型信息？我们可以进行进一步的封装，将Object obj, Class<T> clazz 封装为一个类，在提取的时候自动获取准确类型
+
+8. 我们对[VideoOptions.java](option/VideoOptions.java)进行适配化改造
+   - 将两个实现类中截然不同的参数，统一归类为Map<String, [TypedObject](param/TypedObject.java)>
+   - [TypedObject.java](param/TypedObject.java)类提供（该类具备强通用性，因此将会作为底层技术组件使用）
+   - [VideoOptions.java](option/VideoOptions.java)适配
+
+    ```java
+    /**
+     * 删除，因为当前的参数并不通用，将会放置于Map中
+     * 获取反向提示词
+     * 用于指定不希望在生成视频中出现的内容
+     *
+     * @return 反向提示词字符串
+     */
+    String getNegativePrompt();
+    
+    /**
+     * 删除，因为当前的参数并不通用，将会放置于Map中
+     * 获取随机种子值
+     * 用于控制视频生成的随机性，相同种子值可产生相似结果
+     *
+     * @return 种子值字符串
+     */
+    Long getSeed();
+   
+   /**
+     * 添加字段，该字段会包含其他的剩余参数
+     * 获取所有参数
+     *
+     * @return 参数映射关系
+     */
+    Map<String, TypedObject<?>> getOtherParameters();
+    ```
+   - 在其他实现类中添加该字段即可
+    ```java
+    /**
+    * 所有参数
+    */
+    @JsonIgnore
+    private Map<String, TypedObject<?>> allParameters;
+    ```
+9. 

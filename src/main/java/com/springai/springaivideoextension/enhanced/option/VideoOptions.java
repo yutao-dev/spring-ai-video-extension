@@ -1,6 +1,9 @@
 package com.springai.springaivideoextension.enhanced.option;
 
+import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import org.springframework.ai.model.ModelOptions;
+
+import java.util.Map;
 
 /**
  * 视频生成选项接口
@@ -53,22 +56,6 @@ public interface VideoOptions extends ModelOptions {
     String getModel();
 
     /**
-     * 获取生成视频的尺寸规格
-     * 格式通常为 "宽度x高度"，如 "1920x1080"
-     *
-     * @return 视频尺寸字符串
-     */
-    String getImageSize();
-
-    /**
-     * 获取反向提示词
-     * 用于指定不希望在生成视频中出现的内容
-     *
-     * @return 反向提示词字符串
-     */
-    String getNegativePrompt();
-
-    /**
      * 获取参考图像路径或URL
      * 用于基于图像生成视频内容
      *
@@ -77,10 +64,9 @@ public interface VideoOptions extends ModelOptions {
     String getImage();
 
     /**
-     * 获取随机种子值
-     * 用于控制视频生成的随机性，相同种子值可产生相似结果
+     * 获取所有参数
      *
-     * @return 种子值字符串
+     * @return 参数映射关系
      */
-    Long getSeed();
+    Map<String, TypedObject<?>> getAllParameters();
 }
