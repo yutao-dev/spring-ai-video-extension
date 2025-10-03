@@ -134,7 +134,7 @@ System.out.println("视频生成请求ID: " + requestId);
 | `ai.video.timer.timeout`    | 任务超时时间（毫秒）   | `300000` (5分钟)    |
 | `ai.video.timer.ttl`        | 任务存储 TTL（毫秒） | `86400000` (24小时) |
 | `ai.video.timer.interval`   | 轮询间隔（毫秒）     | `30000` (30秒)     |
-| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key:`   |
+| `ai.video.timer.key-prefix` | 存储 key 前缀    | `in:memory:key:`  |
 
 > ⚠️ 注意：`ai.video.timer.key-prefix` 默认值已修正为 `in:memory:key:`（以冒号结尾），旧版本缺少末尾冒号可能导致键值处理异常
 
