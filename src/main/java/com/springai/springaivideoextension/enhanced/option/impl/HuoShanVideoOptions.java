@@ -20,7 +20,7 @@ import lombok.Data;
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class VideoOptionsImpl implements VideoOptions {
+public class HuoShanVideoOptions implements VideoOptions {
 
     /**
      * 模型唯一标识符
@@ -28,14 +28,14 @@ public class VideoOptionsImpl implements VideoOptions {
      */
     @JsonIgnore
     private String modelId;
-
+    
     /**
      * 模型显示名称
      * 用于前端展示和用户界面显示的模型名称
      */
     @JsonIgnore
     private String modelName;
-
+    
     /**
      * 模型详细描述信息
      * 包含模型的功能特点、适用场景等详细说明

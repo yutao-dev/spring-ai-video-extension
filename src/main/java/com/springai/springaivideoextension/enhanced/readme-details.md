@@ -198,6 +198,28 @@
    - modelName: 模型名称
    - modelDescription: 模型描述
 4. 这些字段不参与请求发送，因此需要使用@JsonIgnore，这些字段是作为策略模式中重要的模型参数匹配信息而存在的
+    ```java
+    /**
+     * 模型唯一标识符
+     * 用于内部识别和区分不同的视频生成模型
+     */
+    @JsonIgnore
+    private String modelId;
+    
+    /**
+     * 模型显示名称
+     * 用于前端展示和用户界面显示的模型名称
+     */
+    @JsonIgnore
+    private String modelName;
+    
+    /**
+     * 模型详细描述信息
+     * 包含模型的功能特点、适用场景等详细说明
+     */
+    @JsonIgnore
+    private String modelDescription;
+    ```
 5. 同时为了保证每个参数策略都可以被识别，需要在[VideoOptions.java](option/VideoOptions.java)额外添加这三个参数的getter方法
     ```java
     /**
@@ -224,3 +246,90 @@
      */
     String getModelDescription();
     ```
+6. 在其他的实现类中也实现类似的结构即可，这里我们再以[火山方舟的视频模型文档](https://www.volcengine.com/docs/82379/1520757)为例
+    ```shell
+    # 创建 图生视频 任务
+    curl -X POST https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer f16d8c81-abda-4cfe-af76-1dad86ccb914" \
+      -d '{
+        "model": "doubao-seedance-1-0-pro-250528",
+        "content": [
+            {
+                "type": "text",
+                "text": "无人机以极快速度穿越复杂障碍或自然奇观，带来沉浸式飞行体验  --resolution 1080p  --duration 5 --camerafixed false --watermark true"
+            },
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": "https://ark-project.tos-cn-beijing.volces.com/doc_image/seepro_i2v.png"
+                }
+            }
+        ]
+    }'
+    ```
+    ##### 请求参数总览
+    
+    | 参数        | 类型       | 是否必选  | 描述                                  |
+    |:----------|:---------|:------|:------------------------------------|
+    | `model`   | String   | **是** | 需要调用的模型ID，例如 `doubao-seedance-pro`。 |
+    | `content` | Object[] | **是** | 输入给模型的内容数组，可包含文本和图片对象。              |
+    
+    ---
+    
+    ##### `content` 对象详情
+    
+    ###### 1. 文本信息对象
+    
+    | 参数     | 类型     | 是否必选  | 描述                                                                                                |
+    |:-------|:-------|:------|:--------------------------------------------------------------------------------------------------|
+    | `type` | String | **是** | 必须为 `"text"`。                                                                                     |
+    | `text` | String | **是** | 包含两部分：<br>1. **文本提示词**（必填）：描述期望生成的视频内容。<br>2. **参数命令**（选填）：以 `--[parameters]` 格式追加在提示词后，用于控制视频规格。 |
+    
+    ###### 2. 图片信息对象
+    
+    | 参数          | 类型     | 是否必选     | 描述                                                                                   |
+    |:------------|:-------|:---------|:-------------------------------------------------------------------------------------|
+    | `type`      | String | **是**    | 必须为 `"image_url"`。                                                                   |
+    | `image_url` | Object | **是**    | 包含图片信息的对象。                                                                           |
+    | `role`      | String | **条件必填** | 定义图片的用途：<br>- `first_frame` (首帧)<br>- `last_frame` (尾帧)<br>- `reference_image` (参考图) |
+    
+     `image_url` 对象
+    
+    | 参数    | 类型     | 是否必选  | 描述               |
+    |:------|:-------|:------|:-----------------|
+    | `url` | String | **是** | 图片的URL或Base64编码。 |
+    
+    ---
+    
+    ##### 其他可选参数
+    
+    | 参数                  | 类型      | 默认值     | 描述             |
+    |:--------------------|:--------|:--------|:---------------|
+    | `callback_url`      | String  | -       | 任务状态变化的回调通知地址。 |
+    | `return_last_frame` | Boolean | `false` | 是否返回生成视频的尾帧图像。 |
+    
+    ---
+    
+    ##### 模型文本命令（通过 `content.text` 传递）
+    
+    这些参数以 `--参数名 值` 或 `--简写 值` 的形式附加在文本提示词之后。
+    
+    | 命令全称              | 简写     | 描述         | 常见取值/备注                                                               |
+    |:------------------|:-------|:-----------|:----------------------------------------------------------------------|
+    | `resolution`      | `rs`   | 视频分辨率      | `480p`, `720p`, `1080p`                                               |
+    | `ratio`           | `rt`   | 视频宽高比      | `16:9`, `4:3`, `1:1`, `3:4`, `9:16`, `21:9`, `keep_ratio`, `adaptive` |
+    | `duration`        | `dur`  | 视频时长（秒）    | 通常支持 3~12 秒                                                           |
+    | `framespersecond` | `fps`  | 视频帧率       | `16`, `24`                                                            |
+    | `watermark`       | `wm`   | 是否包含水印     | `false` (无水印), `true` (有水印)                                           |
+    | `seed`            | `seed` | 控制生成随机性的种子 | `-1` (随机)，或特定整数值                                                      |
+    | `camerafixed`     | `cf`   | 是否固定摄像头    | `false`, `true`                                                       |
+    
+    ---
+    
+    ##### 响应参数
+    
+    | 参数   | 类型     | 描述                                   |
+    |:-----|:-------|:-------------------------------------|
+    | `id` | String | 视频生成任务ID。需凭此ID通过“查询视频生成任务API”获取最终结果。 |
+7. 根据上述的参数，我们进行VideoOptions的设置：
