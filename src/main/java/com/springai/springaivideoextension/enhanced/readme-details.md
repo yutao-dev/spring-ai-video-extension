@@ -608,3 +608,32 @@
         return VideoClient.this.call(videoPrompt);
     }
     ```
+11. 我们随后需要再[VideoModelImpl.java](model/impl/VideoModelImpl.java)中进行进一步的适配化，因为这里依旧是以VideoOptionsImpl作为原型的
+    ```java
+    /**
+     * 调用视频API生成视频
+     * @param videoPrompt 视频提示信息
+     * @return 视频响应结果
+     */
+    @Override
+    public VideoResponse call(VideoPrompt videoPrompt) {
+        // 获取视频提示中的配置选项
+        VideoOptions options = (VideoOptions) videoPrompt.getOptions();
+    
+        // 构建最终的视频配置选项，按照优先级选择：videoPrompt > options > defaultOptions
+        // 新增：注意：这里的Options，是已经经过深拷贝的，且prompt已经经过覆盖，也经过了默认配置覆盖，这都已经在videoOptions.fromParameters()方法中完成
+        // 新增：因此我们可以直接使用options作为最终的配置选项
+    
+        // 使用重试模板执行视频创建请求
+        ResponseEntity<VideoResult> resultResponseEntity = retryTemplate.execute(context -> videoApi.createVideo(options));
+    
+        // 检查响应状态并返回相应结果
+        if (resultResponseEntity.getStatusCode().is2xxSuccessful()) {
+            VideoResult videoResult = resultResponseEntity.getBody();
+            return new VideoResponse(videoResult);
+        } else {
+            logger.error("Error creating video: {}", resultResponseEntity.getStatusCode());
+            return new VideoResponse(Collections.emptyList());
+        }
+    }
+    ```

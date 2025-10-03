@@ -90,21 +90,13 @@ public class VideoModelImpl implements VideoModel {
     public VideoResponse call(VideoPrompt videoPrompt) {
         // 获取视频提示中的配置选项
         VideoOptions options = (VideoOptions) videoPrompt.getOptions();
-        // 优先使用videoPrompt中的prompt，否则使用options中的prompt
-        String prompt = BeanUtils.nullThenChooseOther(videoPrompt.getPrompt(), options.getPrompt(), String.class);
 
         // 构建最终的视频配置选项，按照优先级选择：videoPrompt > options > defaultOptions
-        VideoOptions videoOptions = VideoOptionsImpl.builder()
-                .prompt(BeanUtils.nullThenChooseOther(prompt, defaultOptions.getPrompt(), String.class))
-                .model(BeanUtils.nullThenChooseOther(options.getModel(), defaultOptions.getModel(), String.class))
-                .imageSize(BeanUtils.nullThenChooseOther(options.getImageSize(), defaultOptions.getImageSize(), String.class))
-                .negativePrompt(BeanUtils.nullThenChooseOther(options.getNegativePrompt(), defaultOptions.getNegativePrompt(), String.class))
-                .image(BeanUtils.nullThenChooseOther(options.getImage(), defaultOptions.getImage(), String.class))
-                .seed(BeanUtils.nullThenChooseOther(options.getSeed(), defaultOptions.getSeed(), Long.class))
-                .build();
+        // 注意：这里的Options，是已经经过深拷贝的，且prompt已经经过覆盖，也经过了默认配置覆盖，这都已经在videoOptions.fromParameters()方法中完成
+        // 因此我们可以直接使用options作为最终的配置选项
 
         // 使用重试模板执行视频创建请求
-        ResponseEntity<VideoResult> resultResponseEntity = retryTemplate.execute(context -> videoApi.createVideo(videoOptions));
+        ResponseEntity<VideoResult> resultResponseEntity = retryTemplate.execute(context -> videoApi.createVideo(options));
 
         // 检查响应状态并返回相应结果
         if (resultResponseEntity.getStatusCode().is2xxSuccessful()) {
