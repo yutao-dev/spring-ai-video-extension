@@ -3,6 +3,8 @@ package com.springai.springaivideoextension.enhanced.option.impl;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.springai.springaivideoextension.common.util.BeanUtils;
+import com.springai.springaivideoextension.common.util.JsonUtils;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
 import lombok.Builder;
@@ -93,4 +95,36 @@ public class SiliconCloudVideoOptions implements VideoOptions {
      */
     @JsonIgnore
     private Map<String, TypedObject<?>> allParameters;
+
+    /**
+     * 构建JSON请求体
+     *
+     * @return JSON请求体字符串
+     */
+    @Override
+    public String buildJsonBody() {
+        // 因为这里的参数没有嵌套或者其他的特殊情况，所以这里直接返回即可
+        return JsonUtils.writeValueAsString(this);
+    }
+
+    /**
+     * 深拷贝所有参数
+     *
+     * @param params 参数映射关系
+     */
+    @Override
+    public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
+        return VideoOptionsImpl.builder()
+                .modelId(BeanUtils.nullThenChooseOther(params.get("modelId"), this.modelId, String.class))
+                .modelName(BeanUtils.nullThenChooseOther(params.get("modelName"), this.modelName, String.class))
+                .modelDescription(BeanUtils.nullThenChooseOther(params.get("modelDescription"), this.modelDescription, String.class))
+                .prompt(BeanUtils.nullThenChooseOther(params.get("prompt"), this.prompt, String.class))
+                .model(BeanUtils.nullThenChooseOther(params.get("model"), this.model, String.class))
+                .imageSize(BeanUtils.nullThenChooseOther(params.get("imageSize"), this.imageSize, String.class))
+                .negativePrompt(BeanUtils.nullThenChooseOther(params.get("negativePrompt"), this.negativePrompt, String.class))
+                .image(BeanUtils.nullThenChooseOther(params.get("image"), this.image, String.class))
+                .seed(BeanUtils.nullThenChooseOther(params.get("seed"), this.seed, Long.class))
+                .allParameters(params)
+                .build();
+    }
 }

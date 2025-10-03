@@ -582,3 +582,6 @@
         }
     }
     ```
+10. 我们再完善videoOptions.setAllParameters(this.params);
+    - 这里的set方法很显然会出现线程安全问题，因此我们改成深拷贝，即创建一个新的对象，并赋值给videoOptions
+    - 

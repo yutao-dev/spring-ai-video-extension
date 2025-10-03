@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springai.springaivideoextension.common.util.BeanUtils;
 import com.springai.springaivideoextension.common.util.JsonUtils;
 import com.springai.springaivideoextension.enhanced.option.VideoOptions;
 import com.springai.springaivideoextension.enhanced.param.TypedObject;
@@ -65,19 +66,6 @@ public class HuoShanVideoOptions implements VideoOptions {
     @JsonProperty("model")
     private String model;
 
-    /**
-     * 生成视频的尺寸规格
-     * 格式如: "1024x1024", "1280x720" 等
-     */
-    @JsonProperty("image_size")
-    private String imageSize;
-
-    /**
-     * 负面提示词
-     * 指定不希望在生成视频中出现的内容
-     */
-    @JsonProperty("negative_prompt")
-    private String negativePrompt;
 
     /**
      * 参考图像路径或URL
@@ -85,13 +73,6 @@ public class HuoShanVideoOptions implements VideoOptions {
      */
     @JsonProperty("image")
     private String image;
-
-    /**
-     * 随机种子
-     * 用于控制生成过程的随机性，相同种子可产生一致结果
-     */
-    @JsonProperty("seed")
-    private Long seed;
 
     /**
      * 所有参数，他的作用是：存储非标准字段，序列化的时候将会作为重要的字段
@@ -107,5 +88,23 @@ public class HuoShanVideoOptions implements VideoOptions {
     @Override
     public String buildJsonBody() {
         return JsonUtils.writeValueAsString(this);
+    }
+
+    /**
+     * 深拷贝所有参数
+     *
+     * @param params 参数映射关系
+     */
+    @Override
+    public VideoOptions fromParameters(Map<String, TypedObject<?>> params) {
+        return HuoShanVideoOptions.builder()
+                .modelId(BeanUtils.nullThenChooseOther(params.get("modelId"), this.modelId, String.class))
+                .modelName(BeanUtils.nullThenChooseOther(params.get("modelName"), this.modelName, String.class))
+                .modelDescription(BeanUtils.nullThenChooseOther(params.get("modelDescription"), this.modelDescription, String.class))
+                .prompt(BeanUtils.nullThenChooseOther(params.get("prompt"), this.prompt, String.class))
+                .model(BeanUtils.nullThenChooseOther(params.get("model"), this.model, String.class))
+                .image(BeanUtils.nullThenChooseOther(params.get("image"), this.image, String.class))
+                .allParameters(params)
+                .build();
     }
 }
