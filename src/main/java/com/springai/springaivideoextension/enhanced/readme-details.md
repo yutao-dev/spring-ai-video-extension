@@ -778,5 +778,95 @@
     ```
 5. 单元测试集成
    - 我们将再次通过单元测试，测试VideoClient内部功能是否可以正常使用
-   - 
+    ```java
+    /**
+     * @author 王玉涛
+     * @version 1.0
+     * @since 2025/10/3
+     */
+    @SpringBootTest
+    class VideoClientTest {
+    
+        @Resource
+        private VideoApiConfig videoApiConfig;
+        @Resource
+        private VideoStorage videoStorage;
+    
+    
+        @Test
+        void testVideoClient() {
+    
+            List<String> apiKeys = videoApiConfig.getApiKeys();
+            List<String> baseUrls = videoApiConfig.getBaseUrls();
+            List<String> videoPaths = videoApiConfig.getVideoPaths();
+            List<String> videoStatusPaths = videoApiConfig.getVideoStatusPaths();
+    
+            Map<String, VideoApi> videoApiMap = new HashMap<>();
+    
+            for (int i = 0; i < apiKeys.size(); i++) {
+                VideoApi.Builder videoApi = VideoApi.builder()
+                        .apiKey(apiKeys.get(i))
+                        .baseUrl(baseUrls.get(i))
+                        .videoPath(videoPaths.get(i))
+                        .videoStatusPath(videoStatusPaths.get(i));
+                videoApiMap.put("" + i, videoApi.build());
+            }
+            Assert.isTrue(!videoApiMap.isEmpty(), "没有可用的apiKey");
+    
+            Map<String, VideoModel> videoModelMap = videoApiMap.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                        entry -> new VideoModelImpl(entry.getValue()),
+                        (oldValue, newValue) -> oldValue
+                    ));
+    
+            SiliconCloudVideoOptions siliconCloudVideoOptions = new SiliconCloudVideoOptions();
+            siliconCloudVideoOptions.setModelId("0");
+            HuoShanVideoOptions huoShanVideoOptions = new HuoShanVideoOptions();
+            huoShanVideoOptions.setModelId("1");
+            VideoOptionsFactory videoOptionsFactory = new VideoOptionsFactory(List.of(siliconCloudVideoOptions, huoShanVideoOptions));
+    
+            VideoClient videoClient = new VideoClient(videoModelMap.get("0"), videoStorage, videoModelMap, videoOptionsFactory);
+    
+            String output = videoClient.param()
+                    .modelId("0")
+                    .model("Wan-AI/Wan2.2-T2V-A14B")
+                    .prompt("生成鸟儿飞翔的视频")
+                    .getOutput();
+    
+            System.out.println(output);
+    
+            String output1 = videoClient.param()
+                    .modelId("1")
+                    .model("doubao-seedance-1-0-lite-t2v-250428")
+                    .prompt("生成鸟儿飞翔的视频")
+                    .getOutput();
+    
+            System.out.println(output1);
+        }
+    }
+    ```
+   - 我们根据这条链路的报错，进行了大量适配化改造，包括且不限于Api请求参数构造适配化、Api返回参数适配化、Api路由自动化、模型参数Options路由自动化、模型选择自动化、工厂的鲁棒性提升等等
+   - 请求结果如下
+    ```java
+    2025-10-03T22:59:35.688+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.o.factory.VideoOptionsFactory    : 初始化视频选项工厂: [SiliconCloudVideoOptions(prompt=null, model=null, imageSize=null, negativePrompt=null, image=null, seed=null, allParameters=null), HuoShanVideoOptions(prompt=null, model=null, content=null, image=null, allParameters=null)]
+            2025-10-03T22:59:35.692+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.o.factory.VideoOptionsFactory    : 视频选项工厂初始化完成: {0=SiliconCloudVideoOptions(prompt=null, model=null, imageSize=null, negativePrompt=null, image=null, seed=null, allParameters=null), 1=HuoShanVideoOptions(prompt=null, model=null, content=null, image=null, allParameters=null)}
+            2025-10-03T22:59:35.693+08:00  WARN 29608 --- [spring-ai-video-extension] [           main] c.s.s.common.util.LoggerUtils            : 参考图像未指定, 若模型不对，可能会出现错误！
+            {"prompt":"生成鸟儿飞翔的视频","model":"Wan-AI/Wan2.2-T2V-A14B"}
+            2025-10-03T22:59:36.419+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.enhanced.client.VideoClient        : 视频生成结果: 1prpo543hqgj
+    2025-10-03T22:59:36.419+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.enhanced.client.VideoClient        : 开始持久化请求结果
+    2025-10-03T22:59:36.419+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 未指定前缀，将使用默认前缀: in:memory:key:
+            2025-10-03T22:59:36.420+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 开始保存视频数据: in:memory:key:1prpo543hqgj
+    2025-10-03T22:59:36.420+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 保存视频数据成功: in:memory:key:1prpo543hqgj
+    1prpo543hqgj
+    2025-10-03T22:59:36.420+08:00  WARN 29608 --- [spring-ai-video-extension] [           main] c.s.s.common.util.LoggerUtils            : 参考图像未指定, 若模型不对，可能会出现错误！
+            {"model":"doubao-seedance-1-0-lite-t2v-250428","content":[{"type":"text","text":"生成鸟儿飞翔的视频"}]}
+            2025-10-03T22:59:36.639+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.enhanced.client.VideoClient        : 视频生成结果: cgt-20251003225937-jvvqx
+    2025-10-03T22:59:36.639+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.enhanced.client.VideoClient        : 开始持久化请求结果
+    2025-10-03T22:59:36.640+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 未指定前缀，将使用默认前缀: in:memory:key:
+            2025-10-03T22:59:36.640+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 开始保存视频数据: in:memory:key:cgt-20251003225937-jvvqx
+    2025-10-03T22:59:36.640+08:00  INFO 29608 --- [spring-ai-video-extension] [           main] c.s.s.e.s.impl.InMemoryVideoStorage      : 保存视频数据成功: in:memory:key:cgt-20251003225937-jvvqx
+    cgt-20251003225937-jvvqx
+    ```
+   - 可以看到，请求的链路成功！后续我们将针对第二轮的定时轮询部分进行适配化改造
 6. **到此，VideClient的适配化改造就完成了！我们后续将会从VideoApi再次入手**

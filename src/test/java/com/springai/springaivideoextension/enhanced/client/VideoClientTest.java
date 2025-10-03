@@ -68,13 +68,13 @@ class VideoClientTest {
 
         VideoClient videoClient = new VideoClient(videoModelMap.get("0"), videoStorage, videoModelMap, videoOptionsFactory);
 
-        /*String output = videoClient.param()
+        String output = videoClient.param()
                 .modelId("0")
                 .model("Wan-AI/Wan2.2-T2V-A14B")
                 .prompt("生成鸟儿飞翔的视频")
-                .getOutput();*/
+                .getOutput();
 
-//        System.out.println(output);
+        System.out.println(output);
 
         String output1 = videoClient.param()
                 .modelId("1")
